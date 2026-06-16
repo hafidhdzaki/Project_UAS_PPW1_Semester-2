@@ -1,0 +1,134 @@
+
+        :root {
+            --primary-color: #E67E22;
+            --primary-light: #FFF0E6;
+            --secondary-color: #F8F9FA;
+            --text-dark: #2C1E16;
+            --text-muted: #8E847D;
+            --border-color: #EAEAEA;
+            --input-bg: #FAF6F0;
+            
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #FDFBFC;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR (LIGHT THEME - KONSISTEN) ===== */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0; left: 0;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; z-index: 1000;
+            transition: all 0.3s;
+        }
+        .sidebar-brand {
+            padding: 25px 20px; font-weight: 700; font-size: 1.2rem;
+            display: flex; align-items: center; gap: 12px;
+            color: var(--text-dark); text-decoration: none;
+        }
+        .sidebar-brand .icon-bg {
+            background-color: var(--primary-color); color: white;
+            width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; font-size: 1rem;
+        }
+        .badge-admin {
+            background-color: var(--primary-light); color: var(--primary-color);
+            font-size: 0.65rem; padding: 3px 8px; border-radius: 12px; margin-left: auto; font-weight: 600;
+        }
+        
+        .sidebar-menu { list-style: none; padding: 0 15px; margin-top: 10px; flex: 1; }
+        .sidebar-menu li { margin-bottom: 5px; }
+        .sidebar-menu a {
+            display: flex; align-items: center; gap: 15px;
+            padding: 12px 15px; color: var(--text-muted); text-decoration: none;
+            font-weight: 500; border-radius: 10px; transition: all 0.3s;
+        }
+        .sidebar-menu a:hover { background-color: var(--secondary-color); color: var(--primary-color); }
+        .sidebar-menu a.active { background-color: var(--primary-color); color: white; }
+        .sidebar-menu .badge-notif {
+            background-color: var(--primary-color); color: white; border-radius: 50%;
+            width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; margin-left: auto;
+        }
+        .sidebar-menu a.active .badge-notif { background-color: white; color: var(--primary-color); }
+
+        /* Submenu Dropdown (Light Theme) */
+        .has-submenu > a { justify-content: space-between; }
+        .has-submenu > a .menu-left { display: flex; align-items: center; gap: 15px; }
+        .submenu { list-style: none; padding-left: 25px; margin-top: 5px; display: none; }
+        .submenu.show { display: block; }
+        .submenu a { padding: 10px 15px; font-size: 0.875rem; color: var(--text-muted); border-radius: 8px; }
+        .submenu a:hover { background-color: var(--secondary-color); color: var(--primary-color); }
+        .submenu a.active { color: var(--primary-color); background-color: var(--primary-light); font-weight: 600; }
+        
+        /* Sidebar Footer Profile */
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border-color); }
+        .user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .avatar-circle { background-color: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .user-details h6 { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
+        .user-details p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
+        .btn-logout { color: #E74C3C; text-decoration: none; font-weight: 500; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+        .btn-logout:hover { text-decoration: underline; }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content { margin-left: var(--sidebar-width); padding: 20px 30px; }
+
+        /* Top Header */
+        .top-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .page-title h2 { font-weight: 700; font-size: 1.4rem; margin: 0; }
+        .page-title p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+        .btn-menu-mobile { background: transparent; border: none; font-size: 1.5rem; color: var(--text-dark); }
+
+        /* Cards */
+        .admin-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 25px; }
+        .card-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-title { font-weight: 600; font-size: 1.05rem; margin: 0; }
+        
+        .badge-kategori-count { background-color: var(--primary-light); color: var(--primary-color); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(230, 126, 34, 0.2); }
+
+        /* Table Kategori */
+        .table-kategori th { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .table-kategori td { vertical-align: middle; font-size: 0.9rem; padding: 15px 10px; border-bottom: 1px solid var(--border-color); color: var(--text-dark); }
+        .table-kategori tr:last-child td { border-bottom: none; }
+        .td-no { color: var(--text-muted); width: 50px; }
+        .td-name { font-weight: 600; }
+        .badge-produk { background-color: white; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+        
+        /* Action Buttons di Tabel */
+        .btn-action { background: white; padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
+        .btn-edit { border: 1px solid #3498DB; color: #3498DB; }
+        .btn-edit:hover { background: #3498DB; color: white; }
+        .btn-hapus { border: 1px solid #D5DBDB; color: var(--text-muted); }
+        .btn-hapus:hover { background: #E74C3C; border-color: #E74C3C; color: white; }
+
+        /* Form Tambah Kategori (Card Kanan) */
+        .card-form { border-top: 4px solid var(--primary-color); }
+        .card-form-title { font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+        .card-form-title i { color: var(--primary-color); }
+        
+        .form-label { font-weight: 600; font-size: 0.85rem; color: var(--text-dark); margin-bottom: 8px; }
+        .text-asterisk { color: var(--primary-color); }
+        .form-control { background-color: var(--input-bg); border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; padding: 10px 15px; font-size: 0.9rem; }
+        .form-control:focus { background-color: white; border-color: var(--primary-color); box-shadow: 0 0 0 0.2rem rgba(230, 126, 34, 0.1); }
+        .char-counter { font-size: 0.7rem; color: var(--text-muted); text-align: right; margin-top: 4px; }
+        
+        .btn-submit { background-color: #E2D5C8; color: var(--text-dark); border: none; width: 100%; border-radius: 8px; padding: 10px; font-weight: 600; font-size: 0.9rem; margin-top: 10px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-submit:hover { background-color: var(--primary-color); color: white; }
+
+        /* Tips Box */
+        .tips-box { background-color: #FFF9F5; border: 1px solid #FDE4D3; border-radius: 8px; padding: 15px; margin-top: 20px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+        .tips-box i { color: var(--primary-color); margin-right: 5px; }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 991px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; padding: 15px; }
+        }

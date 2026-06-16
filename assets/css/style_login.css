@@ -1,0 +1,247 @@
+:root {
+            --primary-color: #E67E22;
+            --secondary-color: #FAF6F0;
+            --text-dark: #3E2723;
+            --text-medium: #795548;
+            --input-bg: #FAF6F0;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 20px 0;
+            margin-bottom: -50px; /* Tarik kartu login ke atas sedikit */
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-dark) !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+        }
+        .navbar-brand i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        /* --- Main Login Section --- */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-card-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .login-card {
+            background-color: #FFFFFF;
+            border-radius: 30px;
+            box-shadow: var(--card-shadow);
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Ikon Gandum Atas Kartu */
+        .card-top-icon {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+        .icon-box {
+            background-color: var(--primary-color);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.2);
+        }
+
+        /* Tipografi Kartu */
+        .login-card h2 {
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .login-card .register-text {
+            color: var(--text-medium);
+            text-align: center;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+        .login-card .register-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .login-card .register-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* Formulir Input */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .form-control {
+            background-color: var(--input-bg);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+        .form-control:focus {
+            background-color: var(--input-bg);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(230, 126, 34, 0.1);
+        }
+        .form-control::placeholder {
+            color: #A0938C;
+            opacity: 0.7;
+        }
+
+        /* Input Group Password */
+        .input-group-text {
+            background-color: var(--input-bg);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+            color: #A0938C;
+            cursor: pointer;
+        }
+        .input-group .form-control {
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+        }
+
+        /* Opsi Lupa Password */
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+        .form-check-label {
+            color: var(--text-medium);
+        }
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .forgot-password {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        /* Tombol */
+        .btn {
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #D35400;
+            border-color: #D35400;
+        }
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background-color: transparent;
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Pemisah 'atau' */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+            color: #A0938C;
+            font-size: 0.9rem;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .divider:not(:empty)::before {
+            margin-right: .25em;
+        }
+        .divider:not(:empty)::after {
+            margin-left: .25em;
+        }
+
+        /* Info Demo */
+        .demo-info {
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            margin-top: 25px;
+        }
+        .demo-info strong {
+            color: var(--text-dark);
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 25px 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #A0938C;
+        }
+
+        /* --- Responsive Queries --- */
+        @media (max-width: 576px) {
+            .navbar-brand { font-size: 1.1rem; }
+            .login-card h2 { font-size: 1.6rem; }
+            .p-md-5 { padding: 1.5rem !important; } /* Sesuaikan padding untuk mobile */
+        }

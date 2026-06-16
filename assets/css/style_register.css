@@ -1,0 +1,197 @@
+:root {
+            --primary-color: #E67E22;
+            --primary-hover: #D35400;
+            --secondary-color: #FAF6F0;
+            --text-dark: #3E2723;
+            --text-medium: #795548;
+            --input-bg: #FAF6F0;
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 25px 0;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-dark) !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+            text-decoration: none;
+        }
+        .navbar-brand i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        /* --- Main Signup Section --- */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0 40px 0;
+        }
+
+        .signup-card {
+            background-color: #FFFFFF;
+            border-radius: 35px;
+            box-shadow: var(--card-shadow);
+            width: 100%;
+            max-width: 550px; /* Sedikit lebih lebar untuk form panjang */
+            border: 1px solid rgba(0, 0, 0, 0.02);
+        }
+
+        /* Ikon Oranye Atas */
+        .card-top-icon {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+        .icon-box {
+            background-color: var(--primary-color);
+            color: white;
+            width: 55px;
+            height: 55px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.2);
+        }
+
+        /* Tipografi */
+        .signup-card h2 {
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .signup-card .login-prompt {
+            color: var(--text-medium);
+            text-align: center;
+            font-size: 0.95rem;
+            margin-bottom: 35px;
+        }
+        .signup-card .login-prompt a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .signup-card .login-prompt a:hover {
+            text-decoration: underline;
+        }
+
+        /* Form Controls */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .form-control {
+            background-color: var(--input-bg);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            background-color: var(--input-bg);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(230, 126, 34, 0.1);
+        }
+
+        /* Input Group Password */
+        .input-group-text {
+            background-color: var(--input-bg);
+            border: 1px solid transparent;
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+            color: #A0938C;
+            cursor: pointer;
+            padding-right: 18px;
+        }
+        .input-group .form-control {
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+        }
+
+        /* Tombol */
+        .btn {
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.2);
+        }
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border: 1.5px solid var(--primary-color);
+            background-color: transparent;
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+            color: #A0938C;
+            font-size: 0.9rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        .divider::before { margin-right: 15px; }
+        .divider::after { margin-left: 15px; }
+
+        /* Footer */
+        footer {
+            padding: 20px 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #A0938C;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .signup-card {
+                border-radius: 25px;
+                padding: 1.5rem !important;
+            }
+            .signup-card h2 { font-size: 1.5rem; }
+        }
