@@ -165,4 +165,49 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
+    // Validasi Form Tambah Produk (Minimal 2 Field)
+    const productForm = document.getElementById('productForm');
+    if (productForm) {
+        productForm.addEventListener('submit', function(e) {
+            const namaVal = inputNama ? inputNama.value.trim() : '';
+            const hargaVal = inputHarga ? parseInt(inputHarga.value) : 0;
+            
+            let isValid = true;
+            let errors = [];
+
+            // 1. Validasi Nama Produk (minimal 3 karakter)
+            if (namaVal.length < 3) {
+                isValid = false;
+                errors.push('Nama Produk minimal harus terdiri dari 3 karakter.');
+                if (inputNama) {
+                    inputNama.classList.add('is-invalid');
+                }
+            } else {
+                if (inputNama) {
+                    inputNama.classList.remove('is-invalid');
+                    inputNama.classList.add('is-valid');
+                }
+            }
+
+            // 2. Validasi Harga Produk (minimal Rp 100)
+            if (isNaN(hargaVal) || hargaVal < 100) {
+                isValid = false;
+                errors.push('Harga Produk harus berupa angka dan minimal Rp 100.');
+                if (inputHarga) {
+                    inputHarga.classList.add('is-invalid');
+                }
+            } else {
+                if (inputHarga) {
+                    inputHarga.classList.remove('is-invalid');
+                    inputHarga.classList.add('is-valid');
+                }
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                alert(errors.join('\n'));
+            }
+        });
+    }
 });

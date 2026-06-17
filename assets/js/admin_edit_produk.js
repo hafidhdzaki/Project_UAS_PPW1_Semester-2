@@ -32,4 +32,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Konfirmasi Perubahan
+    const formEdit = document.querySelector('form');
+    if (formEdit) {
+        formEdit.addEventListener('submit', function(e) {
+            const konfirmasi = confirm('Apakah Anda yakin ingin menyimpan perubahan pada produk ini?');
+            if (!konfirmasi) {
+                e.preventDefault();
+            }
+        });
+    }
 });
