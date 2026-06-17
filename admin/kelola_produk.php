@@ -6,15 +6,37 @@ if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-// Query JOIN untuk tabel admin
+// Paginasi
+$limit = 10; // Tampilkan 10 produk per halaman
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+
+$total_all_query = mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti");
+$total_all = mysqli_fetch_assoc($total_all_query)['cnt'];
+$total_records = $total_all;
+
+$total_pages = ceil($total_records / $limit);
+if ($total_pages < 1) $total_pages = 1;
+if ($page > $total_pages) $page = $total_pages;
+
+$offset = ($page - 1) * $limit;
+$no = $offset + 1;
+
+// Query JOIN dengan paginasi
 $query_produk = "
     SELECT p.*, k.nama_kategori 
     FROM produk_roti p 
     JOIN kategori_roti k ON p.id_kategori = k.id_kategori 
     ORDER BY p.id_produk DESC
+    LIMIT $limit OFFSET $offset
 ";
 $result_produk = mysqli_query($conn, $query_produk);
-$no = 1;
+
+// Helper untuk URL paginasi
+function getPageUrl($p) {
+    $params = $_GET;
+    $params['page'] = $p;
+    return 'kelola_produk.php?' . http_build_query($params);
+}
 
 // Hitung Statistik Produk
 $total_all = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti"))['cnt'];
@@ -47,7 +69,7 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
 <body>
 
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="#" class="sidebar-brand">
+        <a href="../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
@@ -221,12 +243,19 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
             </div>
 
             <div class="pagination-wrapper">
-                <div class="pagination-info">Menampilkan 1-3 dari 24 produk</div>
+                <div class="pagination-info">Menampilkan <?= $total_records > 0 ? $offset + 1 : 0; ?>–<?= min($offset + $limit, $total_records); ?> dari <?= $total_records; ?> produk</div>
                 <ul class="pagination mb-0">
-                    <li class="page-item disabled"><a class="page-link" href="#"><i class="fa-solid fa-chevron-left"></i></a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#"><i class="fa-solid fa-chevron-right"></i></a></li>
+                    <li class="page-item <?= ($page <= 1) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="<?= ($page <= 1) ? '#' : htmlspecialchars(getPageUrl($page - 1)); ?>"><i class="fa-solid fa-chevron-left"></i></a>
+                    </li>
+                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                        <li class="page-item <?= ($page == $i) ? 'active' : ''; ?>">
+                            <a class="page-link" href="<?= htmlspecialchars(getPageUrl($i)); ?>"><?= $i; ?></a>
+                        </li>
+                    <?php endfor; ?>
+                    <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="<?= ($page >= $total_pages) ? '#' : htmlspecialchars(getPageUrl($page + 1)); ?>"><i class="fa-solid fa-chevron-right"></i></a>
+                    </li>
                 </ul>
             </div>
 

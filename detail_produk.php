@@ -108,7 +108,7 @@ $data = mysqli_fetch_assoc($result);
                     <div class="stars">
                         <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
                     </div>
-                    <span class="rating-text">4.8</span> <span class="review-count">(Bohongan)</span>
+                    <span class="rating-text">4.8</span>
                 </div>
 
                 <div class="product-price">

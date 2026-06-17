@@ -78,7 +78,7 @@ $kategori_query = mysqli_query($conn, "SELECT * FROM kategori_roti");
 <body>
     
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="#" class="sidebar-brand">
+        <a href="../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>

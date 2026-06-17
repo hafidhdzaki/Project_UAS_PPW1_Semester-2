@@ -13,7 +13,7 @@ $q_total_user = mysqli_query($conn, "SELECT COUNT(id_user) as total FROM users W
 $total_user = mysqli_fetch_assoc($q_total_user)['total'];
 
 // 3. Hitung stok menipis (stok <= 10)
-$q_stok_menipis = mysqli_query($conn, "SELECT COUNT(id_produk) as total FROM produk_roti WHERE stok <= 10 AND is_tampil = 1");
+$q_stok_menipis = mysqli_query($conn, "SELECT COUNT(id_produk) as total FROM produk_roti WHERE stok <= 10");
 $stok_menipis = mysqli_fetch_assoc($q_stok_menipis)['total'];
 
 // 4. Hitung total pendapatan (pesanan status selesai)
@@ -53,7 +53,7 @@ $q_pesanan_terbaru = mysqli_query($conn, "
 // 11. Ambil stok menipis (limit 3)
 $q_low_stock = mysqli_query($conn, "
     SELECT * FROM produk_roti 
-    WHERE stok <= 10 AND is_tampil = 1 
+    WHERE stok <= 10 
     ORDER BY stok ASC 
     LIMIT 3
 ");
@@ -164,7 +164,7 @@ usort($activities, function($a, $b) {
 <body>
 
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="#" class="sidebar-brand">
+        <a href="../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>

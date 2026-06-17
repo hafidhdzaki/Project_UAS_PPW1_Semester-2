@@ -7,7 +7,19 @@ $kategori_filter = isset($_GET['kategori']) ? intval($_GET['kategori']) : 0;
 $stok_filter = isset($_GET['stok']) ? (array)$_GET['stok'] : [];
 $harga_max = isset($_GET['harga_max']) ? intval($_GET['harga_max']) : 100000;
 
-// Base query
+// Paginasi
+$limit = 9; // Tampilkan 9 produk per halaman
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+
+// Base query untuk hitung total
+$query_count = "
+    SELECT COUNT(p.id_produk) as total 
+    FROM produk_roti p 
+    JOIN kategori_roti k ON p.id_kategori = k.id_kategori 
+    WHERE p.is_tampil = 1
+";
+
+// Base query untuk data
 $query_katalog = "
     SELECT p.*, k.nama_kategori 
     FROM produk_roti p 
@@ -15,19 +27,19 @@ $query_katalog = "
     WHERE p.is_tampil = 1
 ";
 
+$filter_sql = "";
 if (!empty($search)) {
-    $query_katalog .= " AND p.nama_produk LIKE '%$search%'";
+    $filter_sql .= " AND p.nama_produk LIKE '%$search%'";
 }
 
 if ($kategori_filter > 0) {
-    $query_katalog .= " AND p.id_kategori = '$kategori_filter'";
+    $filter_sql .= " AND p.id_kategori = '$kategori_filter'";
 }
 
 if ($harga_max > 0) {
-    $query_katalog .= " AND p.harga <= '$harga_max'";
+    $filter_sql .= " AND p.harga <= '$harga_max'";
 }
 
-// Filter stok jika ada
 if (!empty($stok_filter)) {
     $stok_cond = [];
     foreach ($stok_filter as $s) {
@@ -40,15 +52,30 @@ if (!empty($stok_filter)) {
         }
     }
     if (!empty($stok_cond)) {
-        $query_katalog .= " AND (" . implode(" OR ", $stok_cond) . ")";
+        $filter_sql .= " AND (" . implode(" OR ", $stok_cond) . ")";
     }
 }
 
-$query_katalog .= " ORDER BY p.id_produk DESC";
+$query_count .= $filter_sql;
+$total_records = mysqli_fetch_assoc(mysqli_query($conn, $query_count))['total'];
+$total_pages = ceil($total_records / $limit);
+if ($total_pages < 1) $total_pages = 1;
+if ($page > $total_pages) $page = $total_pages;
+
+$offset = ($page - 1) * $limit;
+
+$query_katalog .= $filter_sql . " ORDER BY p.id_produk DESC LIMIT $limit OFFSET $offset";
 $result_katalog = mysqli_query($conn, $query_katalog);
 
 // Ambil data kategori untuk filter
 $categories_res = mysqli_query($conn, "SELECT * FROM kategori_roti");
+
+// Helper untuk URL paginasi
+function getPageUrl($p) {
+    $params = $_GET;
+    $params['page'] = $p;
+    return 'katalog.php?' . http_build_query($params);
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -268,16 +295,19 @@ $categories_res = mysqli_query($conn, "SELECT * FROM kategori_roti");
                     <?php endif; ?>
                 </div>
 
-                <div class="text-center mt-5 mb-2 text-muted" style="font-size: 0.9rem;">Halaman 1 dari 2</div>
+                <div class="text-center mt-5 mb-2 text-muted" style="font-size: 0.9rem;">Halaman <?= $page; ?> dari <?= $total_pages; ?></div>
                 <nav aria-label="Page navigation">
                     <ul class="pagination">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1"><i class="fa-solid fa-chevron-left"></i></a>
+                        <li class="page-item <?= ($page <= 1) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?= ($page <= 1) ? '#' : htmlspecialchars(getPageUrl($page - 1)); ?>" tabindex="-1"><i class="fa-solid fa-chevron-left"></i></a>
                         </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#"><i class="fa-solid fa-chevron-right"></i></a>
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <li class="page-item <?= ($page == $i) ? 'active' : ''; ?>">
+                                <a class="page-link" href="<?= htmlspecialchars(getPageUrl($i)); ?>"><?= $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?= ($page >= $total_pages) ? '#' : htmlspecialchars(getPageUrl($page + 1)); ?>"><i class="fa-solid fa-chevron-right"></i></a>
                         </li>
                     </ul>
                 </nav>
