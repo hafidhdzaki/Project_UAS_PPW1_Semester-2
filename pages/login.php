@@ -1,8 +1,8 @@
 <?php
-include_once("config.php");
+include_once("../includes/config.php");
 
 if (isLoggedIn()) {
-    header('Location: index.php'); 
+    header('Location: ../index.php'); 
     exit();
 }
 
@@ -22,7 +22,7 @@ if (isset($_POST['login'])){
             if($user['role'] == 'admin') {
                 header('Location: admin/index.php');
             } else {
-                header('Location: index.php');
+                header('Location: ../index.php');
             }
             exit();
         } else {
@@ -47,13 +47,13 @@ if (isset($_POST['login'])){
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link href="assets/css/style_login.css" rel="stylesheet">
+    <link href="<?= BASE_PATH; ?>assets/css/style_login.css" rel="stylesheet">
 </head>
 <body>
 
     <header data-aos="fade-down" data-aos-duration="800">
         <div class="container d-flex justify-content-center justify-content-sm-start">
-            <a class="navbar-brand" href="index.php">
+            <a class="navbar-brand" href="<?= BASE_PATH; ?>index.php">
                 <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
             </a>
         </div>

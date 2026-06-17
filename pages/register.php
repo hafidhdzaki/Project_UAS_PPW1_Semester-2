@@ -1,7 +1,7 @@
 <?php
-include_once("config.php");
+include_once("../includes/config.php");
 if (isLoggedIn()) { 
-    header('Location: index.php'); 
+    header('Location: ../index.php'); 
     exit(); 
 }
 $errors = [];
@@ -67,13 +67,13 @@ if (isset($_POST['register'])) {
     
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <link href="assets/css/style_register.css" rel="stylesheet">
+    <link href="<?= BASE_PATH; ?>assets/css/style_register.css" rel="stylesheet">
 </head>
 <body>
 
     <header data-aos="fade-down">
         <div class="container d-flex justify-content-center justify-content-md-start">
-            <a class="navbar-brand" href="index.php">
+            <a class="navbar-brand" href="<?= BASE_PATH; ?>index.php">
                 <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
             </a>
         </div>

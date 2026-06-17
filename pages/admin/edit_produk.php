@@ -1,9 +1,9 @@
 <?php
-include_once("../config.php");
+include_once("../../includes/config.php");
 
 // Proteksi Admin
 if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
-    header('Location: ../index.php');
+    header('Location: ../../index.php');
     exit();
 }
 
@@ -27,14 +27,13 @@ if (isset($_POST['update_produk'])) {
         $gambar_nama = $_FILES['gambar_produk']['name'];
         $gambar_tmp  = $_FILES['gambar_produk']['tmp_name'];
         // Pastikan Anda sudah membuat folder 'uploads' di dalam folder project Anda
-        $path        = "uploads/" . time() . "_" . $gambar_nama; 
-        
-        move_uploaded_file($gambar_tmp, $path);
+        $db_path     = "assets/img/" . time() . "_" . $gambar_nama; 
+        move_uploaded_file($gambar_tmp, "../../" . $db_path);
         
         // Query update dengan gambar baru
         $query = "UPDATE produk_roti SET 
                   id_kategori='$id_kategori', nama_produk='$nama', deskripsi='$deskripsi', 
-                  harga='$harga', stok='$stok', gambar='$path', is_tampil='$is_tampil', is_unggulan='$is_unggulan' 
+                  harga='$harga', stok='$stok', gambar='$db_path', is_tampil='$is_tampil', is_unggulan='$is_unggulan' 
                   WHERE id_produk='$id_produk'";
     } else {
         // Query update tanpa mengubah gambar lama
@@ -73,12 +72,12 @@ $kategori_query = mysqli_query($conn, "SELECT * FROM kategori_roti");
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="../assets/css/style_edit_produk.css" rel="stylesheet">
+    <link href="../../assets/css/style_edit_produk.css" rel="stylesheet">
 </head>
 <body>
     
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="../index.php" class="sidebar-brand">
+        <a href="../../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
@@ -173,7 +172,7 @@ $kategori_query = mysqli_query($conn, "SELECT * FROM kategori_roti");
                     <div class="admin-card p-4 bg-white rounded shadow-sm mb-4">
                         <h5 class="mb-3"><i class="fa-regular fa-image"></i> Gambar Saat Ini</h5>
                         <?php if($data['gambar']): ?>
-                            <img src="<?= $data['gambar']; ?>" alt="Preview" class="img-fluid rounded mb-3" style="max-height: 200px; object-fit: cover;">
+                            <img src="../../<?= $data['gambar']; ?>" alt="Preview" class="img-fluid rounded mb-3" style="max-height: 200px; object-fit: cover;">
                         <?php endif; ?>
                         
                         <label class="form-label">Ganti Gambar (Opsional)</label>
@@ -203,6 +202,6 @@ $kategori_query = mysqli_query($conn, "SELECT * FROM kategori_roti");
         </form>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/admin_edit_produk.js"></script>
+    <script src="../../assets/js/admin_edit_produk.js"></script>
 </body>
 </html>

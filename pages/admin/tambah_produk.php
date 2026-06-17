@@ -1,8 +1,8 @@
 <?php
-include_once("../config.php");
+include_once("../../includes/config.php");
 // Proteksi Admin
 if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
-    header('Location: ../index.php');
+    header('Location: ../../index.php');
     exit();
 }
 
@@ -26,12 +26,12 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
     
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <link href="../assets/css/style_tambah_produk.css" rel="stylesheet">
+    <link href="../../assets/css/style_tambah_produk.css" rel="stylesheet">
 </head>
 <body>
 
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="../index.php" class="sidebar-brand">
+        <a href="../../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
@@ -220,6 +220,6 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="../assets/js/admin_tambah_produk.js"></script>
+    <script src="../../assets/js/admin_tambah_produk.js"></script>
 </body>
 </html>

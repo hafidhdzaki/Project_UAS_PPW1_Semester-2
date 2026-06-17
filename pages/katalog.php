@@ -1,5 +1,4 @@
-<?php 
-include_once("config.php"); 
+include_once("../includes/config.php"); 
 
 // Ambil parameter filter & pencarian
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
@@ -77,82 +76,19 @@ function getPageUrl($p) {
     return 'katalog.php?' . http_build_query($params);
 }
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katalog Produk - Roti Nusantara</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link href="assets/css/style_katalog.css" rel="stylesheet">
-</head>
-<body>
-
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">
-                <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Beranda</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="#">Katalog</a></li>
-                    <?php if(isLoggedIn()): ?>
-                        <?php if($_SESSION['role'] === 'admin'): ?>
-                            <li class="nav-item d-lg-none"><a class="nav-link text-warning fw-bold" href="admin/index.php"><i class="fa-solid fa-gauge me-2"></i>Panel Admin</a></li>
-                        <?php else: ?>
-                            <li class="nav-item d-lg-none"><a class="nav-link" href="keranjang.php"><i class="fa-solid fa-cart-shopping me-2"></i>Keranjang</a></li>
-                        <?php endif; ?>
-                        <li class="nav-item d-lg-none"><a class="nav-link text-danger" href="logout.php"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Keluar (<?= htmlspecialchars($_SESSION['full_name']); ?>)</a></li>
-                    <?php else: ?>
-                        <li class="nav-item d-lg-none"><a class="nav-link" href="login.php"><i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Masuk</a></li>
-                    <?php endif; ?>
-                </ul>
-                <div class="d-none d-lg-flex align-items-center gap-3">
-                    <?php if(isLoggedIn()): ?>
-                        <?php if($_SESSION['role'] === 'admin'): ?>
-                            <a href="admin/index.php" class="btn btn-warning text-white" style="border-radius: 25px; padding: 6px 20px; font-weight:600;">Panel Admin</a>
-                        <?php else: ?>
-                            <a href="keranjang.php" class="nav-link position-relative me-3 text-dark" title="Keranjang Belanja">
-                                <i class="fa-solid fa-cart-shopping fs-5"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
-                                    <?php 
-                                    $id_user_cart = $_SESSION['user_id'];
-                                    $q_cart_count = mysqli_query($conn, "SELECT SUM(qty) as total FROM keranjang WHERE id_user='$id_user_cart'");
-                                    $r_cart_count = mysqli_fetch_assoc($q_cart_count);
-                                    echo $r_cart_count['total'] ? $r_cart_count['total'] : '0';
-                                    ?>
-                                </span>
-                            </a>
-                        <?php endif; ?>
-                        <span class="fw-medium text-dark">Halo, <?= htmlspecialchars($_SESSION['full_name']); ?>!</span>
-                        <a href="logout.php" class="btn btn-outline-danger" style="border-radius: 25px; padding: 6px 20px; font-weight:600;">Keluar</a>
-                    <?php else: ?>
-                        <a href="login.php" class="btn-outline-primary-custom">Masuk</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </nav>
+<?php
+$page_title = "Katalog Produk - Roti Nusantara";
+$active_page = "katalog";
+$custom_css = "assets/css/style_katalog.css";
+include_once("../includes/header.php");
+?>
 
     <section class="page-header">
         <div class="container" data-aos="fade-up">
             <h1>Katalog Produk</h1>
             <p>Temukan roti favoritmu di sini</p>
             <div class="breadcrumb-custom">
-                <a href="index.php">Beranda</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></span> Katalog
+                <a href="<?= BASE_PATH; ?>index.php">Beranda</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></span> Katalog
             </div>
         </div>
     </section>
@@ -273,7 +209,7 @@ function getPageUrl($p) {
                                             <span class="badge-status bg-habis"><i class="fa-solid fa-xmark"></i> Habis</span>
                                         <?php endif; ?>
 
-                                        <img src="<?= htmlspecialchars($row['gambar'] != '' ? 'admin/' . $row['gambar'] : 'https://via.placeholder.com/600'); ?>" alt="Produk">
+                                        <img src="<?= htmlspecialchars($row['gambar'] != '' ? BASE_PATH . $row['gambar'] : 'https://via.placeholder.com/600'); ?>" alt="Produk">
                                     </div>
                                     <div class="product-body">
                                         <h3 class="product-title"><?= htmlspecialchars($row['nama_produk']); ?></h3>
@@ -316,52 +252,7 @@ function getPageUrl($p) {
         </div>
     </div>
 
-    <footer>
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-6 col-md-12">
-                    <a href="index.php" class="footer-brand">
-                        <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
-                    </a>
-                    <p class="footer-text">Roti segar berkualitas tinggi, dipanggang dengan cinta setiap hari.</p>
-                    <p class="text-muted" style="font-size: 0.8rem;">&copy; 2026 Roti Nusantara. Hak cipta dilindungi.</p>
-                </div>
-                <div class="col-lg-2 col-md-4 offset-lg-4 footer-links">
-                    <h6>Tautan</h6>
-                    <ul>
-                        <li><a href="index.php">Beranda</a></li>
-                        <li><a href="#">Katalog</a></li>
-                        <li><a href="login.php">Masuk</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                Dibuat dengan <i class="fa-solid fa-heart" style="color: #e74c3c;"></i> sebagai proyek bakery lokal Indonesia
-            </div>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        // Inisialisasi AOS
-        AOS.init({
-            once: true,
-            offset: 30,
-        });
-
-        // Script sederhana untuk interaksi label harga pada range input
-        const priceRange = document.getElementById('priceRange');
-        const priceValue = document.getElementById('priceValue');
-        
-        if(priceRange) {
-            priceRange.addEventListener('input', function() {
-                // Format angka ke format Rupiah
-                let val = parseInt(this.value).toLocaleString('id-ID');
-                priceValue.textContent = 'Rp ' + val;
-            });
-        }
-    </script>
-</body>
-</html>
+<?php
+$custom_js = "assets/js/katalog.js";
+include_once("../includes/footer.php");
+?>

@@ -1,9 +1,8 @@
-<?php
-include_once("../config.php");
+include_once("../../includes/config.php");
 
 // Proteksi Admin
 if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
-    header('Location: ../index.php');
+    header('Location: ../../index.php');
     exit();
 }
 
@@ -30,11 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if (in_array($ekstensi, $ekstensi_diperbolehkan) === true) {
             if ($ukuran < 2097152) { // Maksimal 2MB
-                // Buat nama file unik agar tidak bentrok
                 $nama_file_baru = time() . '_' . $nama_file;
-                $gambar_path = 'uploads/' . $nama_file_baru;
+                $gambar_path = 'assets/img/' . $nama_file_baru;
                 
-                move_uploaded_file($file_tmp, $gambar_path);
+                move_uploaded_file($file_tmp, '../../' . $gambar_path);
             } else {
                 echo "<script>alert('UKURAN FILE TERLALU BESAR!'); window.location='tambah_produk.php';</script>";
                 exit();

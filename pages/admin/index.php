@@ -1,7 +1,7 @@
 <?php
-include_once("../config.php");
+include_once("../../includes/config.php");
 if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
-    header('Location: ../index.php'); exit();
+    header('Location: ../../index.php'); exit();
 }
 
 // 1. Hitung total produk
@@ -159,12 +159,12 @@ usort($activities, function($a, $b) {
     
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <link href="../assets/css/style_index_admin.css" rel="stylesheet">
+    <link href="../../assets/css/style_index_admin.css" rel="stylesheet">
 </head>
 <body>
 
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="../index.php" class="sidebar-brand">
+        <a href="../../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
@@ -437,6 +437,6 @@ usort($activities, function($a, $b) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../assets/js/admin_index.js"></script>
+    <script src="../../assets/js/admin_index.js"></script>
 </body>
 </html>

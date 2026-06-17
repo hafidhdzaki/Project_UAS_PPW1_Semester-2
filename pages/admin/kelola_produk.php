@@ -1,8 +1,8 @@
 <?php
-include_once("../config.php");
+include_once("../../includes/config.php");
 // Proteksi Admin
 if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
-    header('Location: ../index.php');
+    header('Location: ../../index.php');
     exit();
 }
 
@@ -64,12 +64,12 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
     
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <link href="../assets/css/style_kelola_produk.css" rel="stylesheet">
+    <link href="../../assets/css/style_kelola_produk.css" rel="stylesheet">
 </head>
 <body>
 
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="../index.php" class="sidebar-brand">
+        <a href="../../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
@@ -183,7 +183,7 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
                         <tr data-category="<?= htmlspecialchars($row['nama_kategori']); ?>">
                             <td class="text-muted"><?= $no++; ?></td>
                             <td>
-                                <img src="<?= htmlspecialchars($row['gambar'] != '' ? $row['gambar'] : 'https://via.placeholder.com/100'); ?>" class="img-thumbnail-custom" alt="Gambar">
+                                <img src="<?= htmlspecialchars($row['gambar'] != '' ? '../../' . $row['gambar'] : 'https://via.placeholder.com/100'); ?>" class="img-thumbnail-custom" alt="Gambar">
                             </td>
                             <td>
                                 <p class="product-name-td"><?= htmlspecialchars($row['nama_produk']); ?></p>
@@ -217,7 +217,7 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
                     while($row = mysqli_fetch_assoc($result_produk)):
                 ?>
                     <div class="mobile-product-card" data-category="<?= htmlspecialchars($row['nama_kategori']); ?>">
-                        <img src="<?= htmlspecialchars($row['gambar'] != '' ? $row['gambar'] : 'https://via.placeholder.com/100'); ?>" class="mob-img" alt="Roti">
+                        <img src="<?= htmlspecialchars($row['gambar'] != '' ? '../../' . $row['gambar'] : 'https://via.placeholder.com/100'); ?>" class="mob-img" alt="Roti">
                         <div class="mob-details">
                             <div class="mob-title"><?= htmlspecialchars($row['nama_produk']); ?></div>
                             <div class="mob-meta">Stok: <?= $row['stok']; ?> buah • 
@@ -264,6 +264,6 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="../assets/js/admin_kelola_produk.js"></script>
+    <script src="../../assets/js/admin_kelola_produk.js"></script>
 </body>
 </html>

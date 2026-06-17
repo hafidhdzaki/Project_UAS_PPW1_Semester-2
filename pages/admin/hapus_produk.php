@@ -1,9 +1,9 @@
 <?php
-include_once("../config.php");
+include_once("../../includes/config.php");
 
 // Proteksi halaman: pastikan hanya admin yang bisa akses
 if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
-    header('Location: ../index.php');
+    header('Location: ../../index.php');
     exit();
 }
 

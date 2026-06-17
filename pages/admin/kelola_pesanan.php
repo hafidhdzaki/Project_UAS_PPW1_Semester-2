@@ -1,6 +1,6 @@
 <?php
-include_once("../config.php");
-if (!isLoggedIn() || $_SESSION['role'] !== 'admin') { header('Location: ../index.php'); exit(); }
+include_once("../../includes/config.php");
+if (!isLoggedIn() || $_SESSION['role'] !== 'admin') { header('Location: ../../index.php'); exit(); }
 
 // Action Update Status
 if (isset($_GET['action']) && $_GET['action'] == 'update_status') {
@@ -51,12 +51,12 @@ $pesanan_pending = $stat_pending;
     
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <link href="../assets/css/style_kelola_pesanan.css" rel="stylesheet">
+    <link href="../../assets/css/style_kelola_pesanan.css" rel="stylesheet">
 </head>
 <body>
 
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="#" class="sidebar-brand">
+        <a href="../../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
@@ -208,7 +208,7 @@ $pesanan_pending = $stat_pending;
                             <td>
                                 <div class="d-flex gap-2">
                                     <?php if ($row['bukti_bayar']): ?>
-                                        <a href="../<?= htmlspecialchars($row['bukti_bayar']); ?>" target="_blank" class="btn-action-sm icon-blue d-flex align-items-center justify-content-center" title="Lihat Bukti Transfer">
+                                        <a href="../../<?= htmlspecialchars($row['bukti_bayar']); ?>" target="_blank" class="btn-action-sm icon-blue d-flex align-items-center justify-content-center" title="Lihat Bukti Transfer">
                                             <i class="fa-regular fa-image"></i>
                                         </a>
                                     <?php endif; ?>
@@ -258,7 +258,7 @@ $pesanan_pending = $stat_pending;
                         </div>
                         <div class="mt-2 d-flex gap-2">
                             <?php if ($row['bukti_bayar']): ?>
-                                <a href="../<?= htmlspecialchars($row['bukti_bayar']); ?>" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:0.8rem; border-radius: 6px;"><i class="fa-regular fa-image me-1"></i> Bukti</a>
+                                <a href="../../<?= htmlspecialchars($row['bukti_bayar']); ?>" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:0.8rem; border-radius: 6px;"><i class="fa-regular fa-image me-1"></i> Bukti</a>
                             <?php endif; ?>
                             <?php if ($row['status'] == 'pending'): ?>
                                 <a href="kelola_pesanan.php?action=update_status&id=<?= $row['id_pesanan']; ?>&status=dibayar" class="btn btn-sm btn-success flex-grow-1" style="font-size:0.8rem; border-radius: 6px;"><i class="fa-solid fa-check"></i> Dibayar</a>
@@ -291,6 +291,6 @@ $pesanan_pending = $stat_pending;
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="../assets/js/admin_kelola_pesanan.js"></script>
+    <script src="../../assets/js/admin_kelola_pesanan.js"></script>
 </body>
 </html>

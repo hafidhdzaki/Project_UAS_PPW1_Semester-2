@@ -1,6 +1,6 @@
 <?php
-include_once("../config.php");
-if (!isLoggedIn() || $_SESSION['role'] !== 'admin') { header('Location: ../index.php'); exit(); }
+include_once("../../includes/config.php");
+if (!isLoggedIn() || $_SESSION['role'] !== 'admin') { header('Location: ../../index.php'); exit(); }
 
 // Logika Hapus Kategori
 if (isset($_GET['delete'])) {
@@ -65,12 +65,12 @@ $kategori_count = mysqli_num_rows($q_kat);
     
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <link href="../assets/css/style_kelola_kategori.css" rel="stylesheet">
+    <link href="../../assets/css/style_kelola_kategori.css" rel="stylesheet">
 </head>
 <body>
 
     <aside class="sidebar d-none d-lg-flex" id="sidebar">
-        <a href="#" class="sidebar-brand">
+        <a href="../../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
@@ -194,6 +194,6 @@ $kategori_count = mysqli_num_rows($q_kat);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="../assets/js/admin_kelola_kategori.js"></script>
+    <script src="../../assets/js/admin_kelola_kategori.js"></script>
 </body>
 </html>
