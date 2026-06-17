@@ -34,10 +34,15 @@
         }
         .btn-outline-primary-custom:hover { background-color: var(--primary-color); color: white; }
 
+        a {
+            text-decoration: none;
+        }
+
         /* --- Page Header / Hero --- */
         .page-header {
             background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
             color: white; padding: 60px 0 80px 0; text-align: center; border-radius: 0 0 50px 50px;
+            margin-bottom: 10px;
         }
         .page-header h1 { font-weight: 700; margin-bottom: 10px; }
         .breadcrumb-custom {

@@ -6,23 +6,30 @@ if (isLoggedIn()) {
     exit();
 }
 
+$error = "";
+
 if (isset($_POST['login'])){
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
     $password = $_POST['password'];
-    $query = "SELECT * FROM users WHERE username = '$username' OR email = '$username'";
+    $query = "SELECT * FROM users WHERE email = '$email'";
     $result = mysqli_query($conn, $query);
     if (mysqli_num_rows($result) == 1) {
         $user = mysqli_fetch_assoc($result);
         if (password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['full_name'] = $user['full_name'];
-            header('Location: index.php');
+            $_SESSION['user_id'] = $user['id_user']; // di DB namanya id_user, bukan id
+            $_SESSION['full_name'] = $user['nama_lengkap']; // di DB namanya nama_lengkap
+            $_SESSION['role'] = $user['role'];
+            if($user['role'] == 'admin') {
+                header('Location: admin/index.php');
+            } else {
+                header('Location: index.php');
+            }
             exit();
         } else {
-            $error = "Username atau password salah!";
+            $error = "Email atau password salah!";
         }
     } else {
-        $error = "Username atau password salah!";
+        $error = "Email atau password salah!";
     }
 }
 ?>
@@ -46,7 +53,7 @@ if (isset($_POST['login'])){
 
     <header data-aos="fade-down" data-aos-duration="800">
         <div class="container d-flex justify-content-center justify-content-sm-start">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="index.php">
                 <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
             </a>
         </div>
@@ -63,9 +70,9 @@ if (isset($_POST['login'])){
                 </div>
 
                 <h2>Masuk ke Akun</h2>
-                <p class="register-text">Belum punya akun? <a href="#">Daftar sekarang</a></p>
+                <p class="register-text">Belum punya akun? <a href="register.php">Daftar sekarang</a></p>
 
-                <form action="proses_login.php" method="POST">
+                <form action="" method="POST">
                     
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
@@ -92,20 +99,18 @@ if (isset($_POST['login'])){
                         <a href="#" class="forgot-password">Lupa Password?</a>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mb-3">Masuk</button>
+                    <?php if(!empty($error)): ?>
+                        <div class="alert alert-danger" style="border-radius: 10px; font-size: 0.9rem;" role="alert">
+                            <?= $error; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <button type="submit" name="login" class="btn btn-primary w-100 mb-3">Masuk</button>
                     
                 </form>
 
                 <div class="divider">atau</div>
-
-                <button class="btn btn-outline-primary w-100">Daftar Sekarang</button>
-
-                <div class="demo-info">
-                    <strong>Informasi Login Demo:</strong><br>
-                    Gunakan email berikut untuk masuk.<br>
-                    Email: <strong>demo@rotinusantara.id</strong><br>
-                    Password: <strong>12345678</strong>
-                </div>
+                <a href="register.php" class="btn btn-outline-primary w-100 text-decoration-none text-center">Daftar Sekarang</a>       
 
             </div>
         </div>
@@ -117,7 +122,7 @@ if (isset($_POST['login'])){
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.css"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     

@@ -1,3 +1,147 @@
+<?php
+include_once("../config.php");
+if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
+    header('Location: ../index.php'); exit();
+}
+
+// 1. Hitung total produk
+$q_total_produk = mysqli_query($conn, "SELECT COUNT(id_produk) as total FROM produk_roti");
+$total_produk = mysqli_fetch_assoc($q_total_produk)['total'];
+
+// 2. Hitung pelanggan
+$q_total_user = mysqli_query($conn, "SELECT COUNT(id_user) as total FROM users WHERE role='pelanggan'");
+$total_user = mysqli_fetch_assoc($q_total_user)['total'];
+
+// 3. Hitung stok menipis (stok <= 10)
+$q_stok_menipis = mysqli_query($conn, "SELECT COUNT(id_produk) as total FROM produk_roti WHERE stok <= 10 AND is_tampil = 1");
+$stok_menipis = mysqli_fetch_assoc($q_stok_menipis)['total'];
+
+// 4. Hitung total pendapatan (pesanan status selesai)
+$q_pendapatan = mysqli_query($conn, "SELECT SUM(total_pembayaran) as total FROM pesanan WHERE status='selesai'");
+$total_pendapatan = mysqli_fetch_assoc($q_pendapatan)['total'];
+if (!$total_pendapatan) $total_pendapatan = 0;
+
+// 5. Hitung total pesanan
+$q_pesanan_total = mysqli_query($conn, "SELECT COUNT(id_pesanan) as total FROM pesanan");
+$pesanan_total = mysqli_fetch_assoc($q_pesanan_total)['total'];
+
+// 6. Hitung pesanan pending
+$q_pending = mysqli_query($conn, "SELECT COUNT(id_pesanan) as total FROM pesanan WHERE status='pending'");
+$pesanan_pending = mysqli_fetch_assoc($q_pending)['total'];
+
+// 7. Hitung pesanan dibayar
+$q_dibayar = mysqli_query($conn, "SELECT COUNT(id_pesanan) as total FROM pesanan WHERE status='dibayar'");
+$pesanan_dibayar = mysqli_fetch_assoc($q_dibayar)['total'];
+
+// 8. Hitung pesanan selesai
+$q_selesai = mysqli_query($conn, "SELECT COUNT(id_pesanan) as total FROM pesanan WHERE status='selesai'");
+$pesanan_selesai = mysqli_fetch_assoc($q_selesai)['total'];
+
+// 9. Hitung pesanan batal
+$q_batal = mysqli_query($conn, "SELECT COUNT(id_pesanan) as total FROM pesanan WHERE status='batal'");
+$pesanan_batal = mysqli_fetch_assoc($q_batal)['total'];
+
+// 10. Ambil pesanan terbaru (limit 3)
+$q_pesanan_terbaru = mysqli_query($conn, "
+    SELECT p.*, u.nama_lengkap 
+    FROM pesanan p 
+    JOIN users u ON p.id_user = u.id_user 
+    ORDER BY p.tanggal_pesanan DESC 
+    LIMIT 3
+");
+
+// 11. Ambil stok menipis (limit 3)
+$q_low_stock = mysqli_query($conn, "
+    SELECT * FROM produk_roti 
+    WHERE stok <= 10 AND is_tampil = 1 
+    ORDER BY stok ASC 
+    LIMIT 3
+");
+
+// 12. Query untuk Aktivitas Terbaru (2 pesanan terbaru, 1 produk terbaru, 1 pelanggan terbaru)
+$q_act_orders = mysqli_query($conn, "
+    SELECT p.id_pesanan, p.status, p.tanggal_pesanan, u.nama_lengkap 
+    FROM pesanan p
+    JOIN users u ON p.id_user = u.id_user
+    ORDER BY p.tanggal_pesanan DESC LIMIT 2
+");
+
+$q_act_product = mysqli_query($conn, "
+    SELECT nama_produk 
+    FROM produk_roti 
+    ORDER BY id_produk DESC LIMIT 1
+");
+
+$q_act_user = mysqli_query($conn, "
+    SELECT nama_lengkap 
+    FROM users 
+    WHERE role='pelanggan' 
+    ORDER BY id_user DESC LIMIT 1
+");
+
+$activities = [];
+
+if ($q_act_orders) {
+    while ($ord = mysqli_fetch_assoc($q_act_orders)) {
+        $id_fmt = str_pad($ord['id_pesanan'], 4, '0', STR_PAD_LEFT);
+        $time = date('d M Y, H:i', strtotime($ord['tanggal_pesanan']));
+        $timestamp = strtotime($ord['tanggal_pesanan']);
+        
+        if ($ord['status'] == 'pending') {
+            $desc = "Pesanan baru <strong>#{$id_fmt}</strong> dari <strong>" . htmlspecialchars($ord['nama_lengkap']) . "</strong> masuk (Pending).";
+            $icon = "fa-solid fa-clipboard-list";
+            $class = "bg-yellow-light text-warning";
+        } elseif ($ord['status'] == 'dibayar') {
+            $desc = "Pembayaran untuk pesanan <strong>#{$id_fmt}</strong> (<strong>" . htmlspecialchars($ord['nama_lengkap']) . "</strong>) telah diterima.";
+            $icon = "fa-solid fa-credit-card";
+            $class = "bg-blue-light text-info";
+        } elseif ($ord['status'] == 'selesai') {
+            $desc = "Pesanan <strong>#{$id_fmt}</strong> (<strong>" . htmlspecialchars($ord['nama_lengkap']) . "</strong>) telah selesai diproses.";
+            $icon = "fa-solid fa-circle-check";
+            $class = "bg-success-subtle text-success";
+        } else {
+            $desc = "Pesanan <strong>#{$id_fmt}</strong> (<strong>" . htmlspecialchars($ord['nama_lengkap']) . "</strong>) dibatalkan.";
+            $icon = "fa-solid fa-circle-xmark";
+            $class = "bg-danger-subtle text-danger";
+        }
+        
+        $activities[] = [
+            'desc' => $desc,
+            'time' => $time,
+            'timestamp' => $timestamp,
+            'icon' => $icon,
+            'class' => $class
+        ];
+    }
+}
+
+if ($q_act_product && mysqli_num_rows($q_act_product) > 0) {
+    $prod = mysqli_fetch_assoc($q_act_product);
+    $activities[] = [
+        'desc' => "Produk baru <strong>'" . htmlspecialchars($prod['nama_produk']) . "'</strong> berhasil ditambahkan.",
+        'time' => "Baru-baru ini",
+        'timestamp' => time() - 3600,
+        'icon' => "fa-solid fa-box",
+        'class' => "bg-orange-light text-warning"
+    ];
+}
+
+if ($q_act_user && mysqli_num_rows($q_act_user) > 0) {
+    $usr = mysqli_fetch_assoc($q_act_user);
+    $activities[] = [
+        'desc' => "Pelanggan baru <strong>" . htmlspecialchars($usr['nama_lengkap']) . "</strong> telah bergabung.",
+        'time' => "Baru-baru ini",
+        'timestamp' => time() - 7200,
+        'icon' => "fa-solid fa-user-plus",
+        'class' => "bg-blue-light text-primary"
+    ];
+}
+
+// Urutkan aktivitas berdasarkan timestamp DESC
+usort($activities, function($a, $b) {
+    return $b['timestamp'] - $a['timestamp'];
+});
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -19,20 +163,26 @@
 </head>
 <body>
 
-    <aside class="sidebar d-none d-lg-flex">
+    <aside class="sidebar d-none d-lg-flex" id="sidebar">
         <a href="#" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
-            Roti Nusantara
-            <span class="badge-admin">ADMIN</span>
+            Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
         
         <ul class="sidebar-menu">
-            <li><a href="#" class="active"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
-            <li><a href="#"><i class="fa-solid fa-box-open"></i> Kelola Produk</a></li>
-            <li><a href="#"><i class="fa-solid fa-tags"></i> Kategori Produk</a></li>
-            <li><a href="#"><i class="fa-solid fa-clipboard-list"></i> Kelola Pesanan <span class="badge-notif">5</span></a></li>
-            <li><a href="#"><i class="fa-solid fa-users"></i> Pelanggan</a></li>
-            <li><a href="#"><i class="fa-solid fa-chart-line"></i> Laporan</a></li>
+            <li><a href="index.php" class="active"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+            <li class="has-submenu">
+                <a href="#" id="toggleProduk">
+                    <div class="menu-left"><i class="fa-solid fa-box"></i>  Kelola Produk</div>
+                    <i class="fa-solid fa-chevron-up" id="iconProduk" style="font-size: 0.7rem;"></i>
+                </a>
+                <ul class="submenu show" id="submenuProduk" style="list-style-type: none;">
+                    <li><a href="kelola_produk.php"><i class="fa-solid fa-list" style="font-size: 0.65rem; margin-right: 5px;"></i> Daftar Produk</a></li>
+                    <li><a href="tambah_produk.php"><i class="fa-solid fa-plus" style="font-size: 0.65rem; margin-right: 5px;"></i> Tambah Produk</a></li>
+                    <li><a href="kelola_kategori.php"><i class="fa-solid fa-tags" style="font-size: 0.65rem; margin-right: 5px;"></i> Kel. Kategori</a></li>
+                </ul>
+            </li>
+            <li><a href="kelola_pesanan.php"><i class="fa-solid fa-clipboard-list"></i> Kelola Pesanan <?php if($pesanan_pending > 0): ?><span class="badge-notif"><?= $pesanan_pending; ?></span><?php endif; ?></a></li>
         </ul>
 
         <div class="sidebar-footer">
@@ -43,7 +193,7 @@
                     <p>admin@rotinusantara.com</p>
                 </div>
             </div>
-            <a href="login.html" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar</a>
+            <a href="../logout.php" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar</a>
         </div>
     </aside>
 
@@ -51,7 +201,7 @@
         
         <header class="top-header" data-aos="fade-down">
             <div class="d-flex align-items-center gap-3">
-                <button class="btn-icon d-lg-none border-0 shadow-sm"><i class="fa-solid fa-bars"></i></button>
+                <button class="btn-icon d-lg-none border-0 shadow-sm" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
                 <div class="page-title">
                     <h2>Dashboard</h2>
                     <p>Admin &rsaquo; Dashboard</p>
@@ -78,25 +228,25 @@
             <div class="col-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
                 <div class="stat-card border-orange">
                     <div class="stat-icon bg-orange-light"><i class="fa-solid fa-box"></i></div>
-                    <div class="stat-value">24</div>
+                    <div class="stat-value"><?= $total_produk; ?></div>
                     <div class="stat-title">Total Produk</div>
-                    <div class="stat-trend text-green"><i class="fa-solid fa-arrow-trend-up"></i> +2 produk baru bulan ini</div>
+                    <div class="stat-trend text-green">Dalam Database</div>
                 </div>
             </div>
             <div class="col-6 col-xl-3" data-aos="fade-up" data-aos-delay="200">
                 <div class="stat-card border-blue">
                     <div class="stat-icon bg-blue-light"><i class="fa-solid fa-clipboard-list"></i></div>
-                    <div class="stat-value">18</div>
+                    <div class="stat-value"><?= $pesanan_total; ?></div>
                     <div class="stat-title">Pesanan Masuk</div>
                     <div class="stat-trend text-muted-trend">
-                        <span style="color:var(--color-yellow);">● 5 pending</span> &nbsp; <span style="color:var(--color-blue);">● 8 dibayar</span>
+                        <span style="color:var(--color-yellow);">● <?= $pesanan_pending; ?> pending</span> &nbsp; <span style="color:var(--color-blue);">● <?= $pesanan_dibayar; ?> dibayar</span>
                     </div>
                 </div>
             </div>
             <div class="col-6 col-xl-3" data-aos="fade-up" data-aos-delay="300">
                 <div class="stat-card border-yellow">
                     <div class="stat-icon bg-yellow-light"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <div class="stat-value">6</div>
+                    <div class="stat-value"><?= $stok_menipis; ?></div>
                     <div class="stat-title">Stok Menipis</div>
                     <div class="stat-trend text-muted-trend">Stok ≤ 10 buah</div>
                 </div>
@@ -104,17 +254,17 @@
             <div class="col-6 col-xl-3" data-aos="fade-up" data-aos-delay="400">
                 <div class="stat-card border-green">
                     <div class="stat-icon bg-green-light"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                    <div class="stat-value">Rp 2,45 jt</div>
-                    <div class="stat-title">Pendapatan Bulan Ini</div>
-                    <div class="stat-trend text-green"><i class="fa-solid fa-arrow-trend-up"></i> +12% dari bulan lalu</div>
+                    <div class="stat-value">Rp <?= number_format($total_pendapatan, 0, ',', '.'); ?></div>
+                    <div class="stat-title">Total Pendapatan</div>
+                    <div class="stat-trend text-green">Pesanan Selesai</div>
                 </div>
             </div>
         </div>
 
         <div class="action-btn-row" data-aos="fade-up">
-            <button class="btn-action btn-action-primary"><i class="fa-solid fa-plus"></i> Tambah Produk</button>
-            <button class="btn-action btn-action-outline-blue"><i class="fa-regular fa-clipboard"></i> Lihat Pesanan</button>
-            <button class="btn-action btn-action-outline-dark"><i class="fa-solid fa-tags"></i> Tambah Kategori</button>
+            <a href="tambah_produk.php" class="btn-action btn-action-primary text-decoration-none"><i class="fa-solid fa-plus"></i> Tambah Produk</a>
+            <a href="kelola_pesanan.php" class="btn-action btn-action-outline-blue text-decoration-none"><i class="fa-regular fa-clipboard"></i> Lihat Pesanan</a>
+            <a href="kelola_kategori.php" class="btn-action btn-action-outline-dark text-decoration-none"><i class="fa-solid fa-tags"></i> Tambah Kategori</a>
             <button class="btn-action btn-action-outline-gray"><i class="fa-solid fa-chart-simple"></i> Export Laporan</button>
         </div>
 
@@ -125,7 +275,7 @@
                 <div class="dash-card" data-aos="fade-up" data-aos-delay="100">
                     <div class="dash-card-header">
                         <h3 class="dash-card-title">Pesanan Terbaru</h3>
-                        <a href="#" class="link-view-all">Lihat Semua <i class="fa-solid fa-chevron-right ms-1"></i></a>
+                        <a href="kelola_pesanan.php" class="link-view-all">Lihat Semua <i class="fa-solid fa-chevron-right ms-1"></i></a>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-borderless table-pesanan align-middle mb-0">
@@ -140,60 +290,41 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="fw-bold" style="color: var(--primary-color);">#018</td>
-                                    <td>
-                                        <div class="customer-info">
-                                            <div class="avatar-sm" style="background-color: #E67E22;">AR</div>
-                                            Anisa Rahma
-                                        </div>
-                                    </td>
-                                    <td class="fw-bold">Rp 84.000</td>
-                                    <td class="d-none d-md-table-cell"><span class="badge-status bg-success-subtle">Selesai</span></td>
-                                    <td class="d-none d-md-table-cell text-muted">15 Jun 2026</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn-action-sm"><i class="fa-regular fa-eye text-primary"></i></button>
-                                            <button class="btn-action-sm"><i class="fa-solid fa-pen text-warning"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold" style="color: var(--primary-color);">#017</td>
-                                    <td>
-                                        <div class="customer-info">
-                                            <div class="avatar-sm" style="background-color: #F39C12;">BS</div>
-                                            Budi Santoso
-                                        </div>
-                                    </td>
-                                    <td class="fw-bold">Rp 46.000</td>
-                                    <td class="d-none d-md-table-cell"><span class="badge-status" style="background:#FEF9E7; color:#F1C40F;">Pending</span></td>
-                                    <td class="d-none d-md-table-cell text-muted">15 Jun 2026</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn-action-sm"><i class="fa-regular fa-eye text-primary"></i></button>
-                                            <button class="btn-action-sm"><i class="fa-solid fa-pen text-warning"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold" style="color: var(--primary-color);">#016</td>
-                                    <td>
-                                        <div class="customer-info">
-                                            <div class="avatar-sm" style="background-color: #9B59B6;">CD</div>
-                                            Citra Dewi
-                                        </div>
-                                    </td>
-                                    <td class="fw-bold">Rp 130.000</td>
-                                    <td class="d-none d-md-table-cell"><span class="badge-status" style="background:#EBF5FB; color:#3498DB;">Dibayar</span></td>
-                                    <td class="d-none d-md-table-cell text-muted">14 Jun 2026</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn-action-sm"><i class="fa-regular fa-eye text-primary"></i></button>
-                                            <button class="btn-action-sm"><i class="fa-solid fa-pen text-warning"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <?php if (mysqli_num_rows($q_pesanan_terbaru) > 0): ?>
+                                    <?php while($row = mysqli_fetch_assoc($q_pesanan_terbaru)): ?>
+                                        <tr>
+                                            <td class="fw-bold" style="color: var(--primary-color);">#<?= str_pad($row['id_pesanan'], 3, '0', STR_PAD_LEFT); ?></td>
+                                            <td>
+                                                <div class="customer-info">
+                                                    <div class="avatar-sm" style="background-color: #E67E22;"><?= strtoupper(substr($row['nama_lengkap'], 0, 2)); ?></div>
+                                                    <?= htmlspecialchars($row['nama_lengkap']); ?>
+                                                </div>
+                                            </td>
+                                            <td class="fw-bold">Rp <?= number_format($row['total_pembayaran'], 0, ',', '.'); ?></td>
+                                            <td class="d-none d-md-table-cell">
+                                                <?php if($row['status'] == 'pending'): ?>
+                                                    <span class="badge-status" style="background:#FEF9E7; color:#F1C40F;">Pending</span>
+                                                <?php elseif($row['status'] == 'dibayar'): ?>
+                                                    <span class="badge-status" style="background:#EBF5FB; color:#3498DB;">Dibayar</span>
+                                                <?php elseif($row['status'] == 'selesai'): ?>
+                                                    <span class="badge-status bg-success-subtle">Selesai</span>
+                                                <?php else: ?>
+                                                    <span class="badge-status bg-danger-subtle text-danger">Batal</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="d-none d-md-table-cell text-muted"><?= date('d M Y', strtotime($row['tanggal_pesanan'])); ?></td>
+                                            <td>
+                                                <div class="d-flex gap-2">
+                                                    <a href="kelola_pesanan.php" class="btn-action-sm text-decoration-none d-flex align-items-center justify-content-center"><i class="fa-regular fa-eye text-primary"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-3">Belum ada pesanan masuk.</td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -204,20 +335,19 @@
                         <h3 class="dash-card-title">Aktivitas Terbaru</h3>
                     </div>
                     <div class="d-flex flex-column gap-3">
-                        <div class="d-flex gap-3 align-items-start">
-                            <div class="avatar-sm bg-orange-light"><i class="fa-solid fa-box"></i></div>
-                            <div>
-                                <p class="m-0 font-weight-500">Produk 'Roti Cokelat Premium' berhasil ditambahkan.</p>
-                                <small class="text-muted">2 menit lalu</small>
-                            </div>
-                        </div>
-                        <div class="d-flex gap-3 align-items-start">
-                            <div class="avatar-sm bg-success-subtle"><i class="fa-solid fa-check"></i></div>
-                            <div>
-                                <p class="m-0 font-weight-500">Pesanan #018 status diubah ke Selesai.</p>
-                                <small class="text-muted">15 menit lalu</small>
-                            </div>
-                        </div>
+                        <?php if(!empty($activities)): ?>
+                            <?php foreach($activities as $act): ?>
+                                <div class="d-flex gap-3 align-items-start">
+                                    <div class="avatar-sm <?= $act['class']; ?>"><i class="<?= $act['icon']; ?>"></i></div>
+                                    <div>
+                                        <p class="m-0 font-weight-500"><?= $act['desc']; ?></p>
+                                        <small class="text-muted"><?= $act['time']; ?></small>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="text-muted text-center py-3">Belum ada aktivitas terbaru.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -229,37 +359,26 @@
                         <h3 class="dash-card-title text-warning"><i class="fa-solid fa-triangle-exclamation me-2"></i> Stok Perlu Diisi</h3>
                     </div>
                     
-                    <div class="stock-item">
-                        <div class="stock-info">
-                            <span>Croissant Butter</span>
-                            <span>8 buah</span>
-                        </div>
-                        <div class="progress">
-                            <div class="progress-bar bg-warning" style="width: 20%"></div>
-                        </div>
-                    </div>
+                    <?php if (mysqli_num_rows($q_low_stock) > 0): ?>
+                        <?php while($row = mysqli_fetch_assoc($q_low_stock)): 
+                            $pct = min(100, max(5, intval(($row['stok'] / 10) * 100)));
+                            $bg_class = ($row['stok'] == 0) ? 'bg-danger' : 'bg-warning';
+                        ?>
+                            <div class="stock-item">
+                                <div class="stock-info">
+                                    <span><?= htmlspecialchars($row['nama_produk']); ?></span>
+                                    <span><?= $row['stok']; ?> buah</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar <?= $bg_class; ?>" style="width: <?= $pct; ?>%"></div>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p class="text-muted text-center py-3">Semua stok produk aman.</p>
+                    <?php endif; ?>
                     
-                    <div class="stock-item">
-                        <div class="stock-info">
-                            <span>Pain au Chocolat</span>
-                            <span>6 buah</span>
-                        </div>
-                        <div class="progress">
-                            <div class="progress-bar bg-warning" style="width: 15%"></div>
-                        </div>
-                    </div>
-
-                    <div class="stock-item">
-                        <div class="stock-info">
-                            <span>Roti Keju Mozzarella</span>
-                            <span>9 buah</span>
-                        </div>
-                        <div class="progress">
-                            <div class="progress-bar bg-warning" style="width: 25%"></div>
-                        </div>
-                    </div>
-                    
-                    <a href="#" class="link-view-all d-block mt-3 text-center">Lihat Semua Produk <i class="fa-solid fa-chevron-right ms-1"></i></a>
+                    <a href="kelola_produk.php" class="link-view-all d-block mt-3 text-center">Lihat Semua Produk <i class="fa-solid fa-chevron-right ms-1"></i></a>
                 </div>
 
                 <div class="dash-card" data-aos="fade-up" data-aos-delay="400">
@@ -267,18 +386,22 @@
                         <h3 class="dash-card-title">Ringkasan Pesanan</h3>
                     </div>
                     <div class="ringkasan-wrapper d-flex align-items-center mt-3">
-                        <div class="chart-container" style="width: 140px; height: 140px;">
-                            <canvas id="orderChart"></canvas>
+                        <div class="chart-container" style="position: relative; width: 140px; height: 140px;">
+                            <canvas id="orderChart" 
+                                    data-selesai="<?= $pesanan_selesai; ?>" 
+                                    data-dibayar="<?= $pesanan_dibayar; ?>" 
+                                    data-pending="<?= $pesanan_pending; ?>" 
+                                    data-batal="<?= $pesanan_batal; ?>"></canvas>
                             <div class="chart-center-text">
-                                <h3>18</h3>
+                                <h3><?= $pesanan_total; ?></h3>
                                 <p>pesanan</p>
                             </div>
                         </div>
                         <div class="chart-legends">
-                            <div class="legend-item"><div class="dot bg-success"></div> Selesai (5)</div>
-                            <div class="legend-item"><div class="dot" style="background:#3498DB;"></div> Dibayar (8)</div>
-                            <div class="legend-item"><div class="dot" style="background:#F1C40F;"></div> Pending (5)</div>
-                            <div class="legend-item"><div class="dot bg-danger"></div> Batal (0)</div>
+                            <div class="legend-item"><div class="dot bg-success"></div> Selesai (<?= $pesanan_selesai; ?>)</div>
+                            <div class="legend-item"><div class="dot" style="background:#3498DB;"></div> Dibayar (<?= $pesanan_dibayar; ?>)</div>
+                            <div class="legend-item"><div class="dot" style="background:#F1C40F;"></div> Pending (<?= $pesanan_pending; ?>)</div>
+                            <div class="legend-item"><div class="dot bg-danger"></div> Batal (<?= $pesanan_batal; ?>)</div>
                         </div>
                     </div>
                 </div>
@@ -289,71 +412,31 @@
     </main>
 
     <nav class="bottom-nav">
-        <a href="#" class="bottom-nav-item active">
+        <a href="index.php" class="bottom-nav-item active">
             <i class="fa-solid fa-border-all"></i>
             <span>Dashboard</span>
         </a>
-        <a href="#" class="bottom-nav-item">
+        <a href="kelola_produk.php" class="bottom-nav-item">
             <i class="fa-solid fa-box"></i>
             <span>Produk</span>
         </a>
-        <a href="#" class="bottom-nav-item">
+        <a href="kelola_pesanan.php" class="bottom-nav-item">
             <i class="fa-solid fa-clipboard-list"></i>
             <span>Pesanan</span>
         </a>
-        <a href="#" class="bottom-nav-item">
+        <a href="kelola_kategori.php" class="bottom-nav-item">
             <i class="fa-solid fa-tags"></i>
             <span>Kategori</span>
         </a>
-        <a href="#" class="bottom-nav-item">
-            <i class="fa-regular fa-user"></i>
-            <span>Menu</span>
+        <a href="../logout.php" class="bottom-nav-item" onclick="return confirm('Apakah Anda yakin ingin keluar?');">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <span>Keluar</span>
         </a>
     </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script>
-        // Init Animate On Scroll
-        AOS.init({ once: true, offset: 50 });
-
-        // Chart.js Configuration
-        const ctx = document.getElementById('orderChart').getContext('2d');
-        const orderChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Selesai', 'Dibayar', 'Pending', 'Batal'],
-                datasets: [{
-                    data: [5, 8, 5, 0],
-                    backgroundColor: [
-                        '#2ECC71', // Green
-                        '#3498DB', // Blue
-                        '#F1C40F', // Yellow
-                        '#E74C3C'  // Red
-                    ],
-                    borderWidth: 0,
-                    cutout: '75%' // Membuat lubang donat lebih besar untuk teks di tengah
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false // Sembunyikan legend bawaan, pakai custom HTML legend
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return ' ' + context.label + ': ' + context.raw + ' pesanan';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    </script>
+    <script src="../assets/js/admin_index.js"></script>
 </body>
 </html>

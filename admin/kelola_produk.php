@@ -1,3 +1,30 @@
+<?php
+include_once("../config.php");
+// Proteksi Admin
+if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
+    header('Location: ../index.php');
+    exit();
+}
+
+// Query JOIN untuk tabel admin
+$query_produk = "
+    SELECT p.*, k.nama_kategori 
+    FROM produk_roti p 
+    JOIN kategori_roti k ON p.id_kategori = k.id_kategori 
+    ORDER BY p.id_produk DESC
+";
+$result_produk = mysqli_query($conn, $query_produk);
+$no = 1;
+
+// Hitung Statistik Produk
+$total_all = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti"))['cnt'];
+$total_aktif = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE is_tampil = 1"))['cnt'];
+$total_habis = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE stok = 0"))['cnt'];
+$total_unggulan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE is_unggulan = 1"))['cnt'];
+
+// Count pending orders for badge
+$pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM pesanan WHERE status='pending'"))['cnt'];
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -26,7 +53,7 @@
         </a>
         
         <ul class="sidebar-menu">
-            <li><a href="index_admin.html"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+            <li><a href="index.php"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
             
             <li class="has-submenu">
                 <a href="#" id="toggleProduk">
@@ -34,13 +61,13 @@
                     <i class="fa-solid fa-chevron-up" id="iconProduk" style="font-size: 0.7rem;"></i>
                 </a>
                 <ul class="submenu show" id="submenuProduk">
-                    <li><a href="#" class="active"><i class="fa-solid fa-list" style="font-size: 0.65rem; margin-right: 5px;"></i> Daftar Produk</a></li>
-                    <li><a href="tambah_produk.html"><i class="fa-solid fa-plus" style="font-size: 0.65rem; margin-right: 5px;"></i> Tambah Produk</a></li>
-                    <li><a href="kelola_kategori.html"><i class="fa-solid fa-tags" style="font-size: 0.65rem; margin-right: 5px;"></i> Kel. Kategori</a></li>
+                    <li><a href="kelola_produk.php" class="active"><i class="fa-solid fa-list" style="font-size: 0.65rem; margin-right: 5px;"></i> Daftar Produk</a></li>
+                    <li><a href="tambah_produk.php"><i class="fa-solid fa-plus" style="font-size: 0.65rem; margin-right: 5px;"></i> Tambah Produk</a></li>
+                    <li><a href="kelola_kategori.php"><i class="fa-solid fa-tags" style="font-size: 0.65rem; margin-right: 5px;"></i> Kel. Kategori</a></li>
                 </ul>
             </li>
 
-            <li><a href="kelola_pesanan.html"><i class="fa-solid fa-clipboard-list"></i> Kelola Pesanan <span class="badge-notif">5</span></a></li>
+            <li><a href="kelola_pesanan.php"><i class="fa-solid fa-clipboard-list"></i> Kelola Pesanan <?php if($pesanan_pending > 0): ?><span class="badge-notif"><?= $pesanan_pending; ?></span><?php endif; ?></a></li>
         </ul>
 
         <div class="sidebar-footer">
@@ -51,7 +78,7 @@
                     <p>admin@rotinusantara.com</p>
                 </div>
             </div>
-            <a href="login.html" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar</a>
+            <a href="../logout.php" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar</a>
         </div>
     </aside>
 
@@ -71,25 +98,25 @@
         <div class="row g-3 mb-2" data-aos="fade-up" data-aos-delay="100">
             <div class="col-6 col-md-3">
                 <div class="stat-card border-orange">
-                    <div class="stat-value">24</div>
+                    <div class="stat-value"><?= $total_all; ?></div>
                     <div class="stat-title">Total Produk</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card border-green">
-                    <div class="stat-value">22</div>
+                    <div class="stat-value"><?= $total_aktif; ?></div>
                     <div class="stat-title">Produk Aktif</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card border-red">
-                    <div class="stat-value">2</div>
+                    <div class="stat-value"><?= $total_habis; ?></div>
                     <div class="stat-title">Stok Habis</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card border-blue">
-                    <div class="stat-value">5</div>
+                    <div class="stat-value"><?= $total_unggulan; ?></div>
                     <div class="stat-title">Produk Unggulan</div>
                 </div>
             </div>
@@ -102,7 +129,7 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" placeholder="Cari nama produk...">
                 </div>
-                <a href="tambah_produk.html" class="btn-add-product">
+                <a href="tambah_produk.php" class="btn-add-product">
                     <i class="fa-solid fa-plus"></i> Tambah Produk Baru
                 </a>
             </div>
@@ -130,109 +157,67 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="text-muted">1</td>
+                        <?php while($row = mysqli_fetch_assoc($result_produk)): ?>
+                        <tr data-category="<?= htmlspecialchars($row['nama_kategori']); ?>">
+                            <td class="text-muted"><?= $no++; ?></td>
                             <td>
-                                <img src="https://images.unsplash.com/photo-1598373182133-52452f7691ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" class="img-thumbnail-custom" alt="Roti">
+                                <img src="<?= htmlspecialchars($row['gambar'] != '' ? $row['gambar'] : 'https://via.placeholder.com/100'); ?>" class="img-thumbnail-custom" alt="Gambar">
                             </td>
                             <td>
-                                <p class="product-name-td">Roti Tawar Susu Premium</p>
-                                <span class="product-sku-td">SKU: RT-001</span>
+                                <p class="product-name-td"><?= htmlspecialchars($row['nama_produk']); ?></p>
                             </td>
-                            <td>Roti Tawar</td>
-                            <td class="fw-bold">Rp 28.000</td>
-                            <td>42 buah</td>
-                            <td><span class="status-badge status-tersedia">Tersedia</span></td>
+                            <td><?= htmlspecialchars($row['nama_kategori']); ?></td>
+                            <td class="fw-bold">Rp <?= number_format($row['harga'], 0, ',', '.'); ?></td>
+                            <td><?= $row['stok']; ?> buah</td>
+                            <td>
+                                <?php if($row['stok'] > 0): ?>
+                                    <span class="status-badge status-tersedia">Tersedia</span>
+                                <?php else: ?>
+                                    <span class="status-badge status-habis">Habis</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <div class="d-flex gap-2 justify-content-center">
-                                    <a href="#" class="btn-action-sm icon-blue" title="Edit Produk"><i class="fa-solid fa-pen"></i></a>
-                                    <button class="btn-action-sm icon-red" style="background:#FDEDEC;" title="Hapus Produk"><i class="fa-regular fa-trash-can"></i></button>
+                                    <a href="edit_produk.php?id=<?= $row['id_produk']; ?>" class="btn-action-sm icon-blue d-flex align-items-center justify-content-center" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                                    <a href="hapus_produk.php?id=<?= $row['id_produk']; ?>" class="btn-action-sm icon-red d-flex align-items-center justify-content-center" style="background:#FDEDEC;" onclick="return confirm('Apakah Anda yakin ingin menghapus produk ini?');" title="Hapus"><i class="fa-regular fa-trash-can"></i></a>
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td class="text-muted">2</td>
-                            <td>
-                                <img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" class="img-thumbnail-custom" alt="Roti">
-                            </td>
-                            <td>
-                                <p class="product-name-td">Croissant Butter Klasik</p>
-                                <span class="product-sku-td">SKU: RM-002</span>
-                            </td>
-                            <td>Roti Manis</td>
-                            <td class="fw-bold">Rp 22.000</td>
-                            <td>8 buah</td>
-                            <td><span class="status-badge status-menipis">Hampir Habis</span></td>
-                            <td>
-                                <div class="d-flex gap-2 justify-content-center">
-                                    <a href="#" class="btn-action-sm icon-blue"><i class="fa-solid fa-pen"></i></a>
-                                    <button class="btn-action-sm icon-red" style="background:#FDEDEC;"><i class="fa-regular fa-trash-can"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">3</td>
-                            <td>
-                                <img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" class="img-thumbnail-custom" alt="Roti">
-                            </td>
-                            <td>
-                                <p class="product-name-td">Roti Pisang Coklat</p>
-                                <span class="product-sku-td">SKU: RM-004</span>
-                            </td>
-                            <td>Roti Manis</td>
-                            <td class="fw-bold">Rp 18.000</td>
-                            <td>0 buah</td>
-                            <td><span class="status-badge status-habis">Habis</span></td>
-                            <td>
-                                <div class="d-flex gap-2 justify-content-center">
-                                    <a href="#" class="btn-action-sm icon-blue"><i class="fa-solid fa-pen"></i></a>
-                                    <button class="btn-action-sm icon-red" style="background:#FDEDEC;"><i class="fa-regular fa-trash-can"></i></button>
-                                </div>
-                            </td>
-                        </tr>
+                        <?php endwhile; ?>
                     </tbody>
                 </table>
             </div>
 
             <div class="mobile-list-wrapper">
-                <div class="mobile-product-card">
-                    <img src="https://images.unsplash.com/photo-1598373182133-52452f7691ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" class="mob-img" alt="Roti">
-                    <div class="mob-details">
-                        <div class="mob-title">Roti Tawar Susu Premium</div>
-                        <div class="mob-meta">Stok: 42 buah • <span class="text-success fw-bold">Tersedia</span></div>
-                        <div class="mob-price">Rp 28.000</div>
+                <?php 
+                mysqli_data_seek($result_produk, 0);
+                if (mysqli_num_rows($result_produk) > 0):
+                    while($row = mysqli_fetch_assoc($result_produk)):
+                ?>
+                    <div class="mobile-product-card" data-category="<?= htmlspecialchars($row['nama_kategori']); ?>">
+                        <img src="<?= htmlspecialchars($row['gambar'] != '' ? $row['gambar'] : 'https://via.placeholder.com/100'); ?>" class="mob-img" alt="Roti">
+                        <div class="mob-details">
+                            <div class="mob-title"><?= htmlspecialchars($row['nama_produk']); ?></div>
+                            <div class="mob-meta">Stok: <?= $row['stok']; ?> buah • 
+                                <?php if($row['stok'] > 0): ?>
+                                    <span class="text-success fw-bold">Tersedia</span>
+                                <?php else: ?>
+                                    <span class="text-danger fw-bold">Habis</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="mob-price">Rp <?= number_format($row['harga'], 0, ',', '.'); ?></div>
+                        </div>
+                        <div class="mob-actions">
+                            <a href="edit_produk.php?id=<?= $row['id_produk']; ?>" class="btn-action-sm icon-blue d-flex align-items-center justify-content-center"><i class="fa-solid fa-pen"></i></a>
+                            <a href="hapus_produk.php?id=<?= $row['id_produk']; ?>" class="btn-action-sm icon-red d-flex align-items-center justify-content-center" style="background:#FDEDEC;" onclick="return confirm('Apakah Anda yakin ingin menghapus produk ini?');"><i class="fa-regular fa-trash-can"></i></a>
+                        </div>
                     </div>
-                    <div class="mob-actions">
-                        <a href="#" class="btn-action-sm icon-blue"><i class="fa-solid fa-pen"></i></a>
-                        <button class="btn-action-sm icon-red" style="background:#FDEDEC;"><i class="fa-regular fa-trash-can"></i></button>
-                    </div>
-                </div>
-
-                <div class="mobile-product-card">
-                    <img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" class="mob-img" alt="Roti">
-                    <div class="mob-details">
-                        <div class="mob-title">Croissant Butter Klasik</div>
-                        <div class="mob-meta">Stok: 8 buah • <span class="text-warning fw-bold">Menipis</span></div>
-                        <div class="mob-price">Rp 22.000</div>
-                    </div>
-                    <div class="mob-actions">
-                        <a href="#" class="btn-action-sm icon-blue"><i class="fa-solid fa-pen"></i></a>
-                        <button class="btn-action-sm icon-red" style="background:#FDEDEC;"><i class="fa-regular fa-trash-can"></i></button>
-                    </div>
-                </div>
-
-                <div class="mobile-product-card">
-                    <img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" class="mob-img" alt="Roti">
-                    <div class="mob-details">
-                        <div class="mob-title">Roti Pisang Coklat</div>
-                        <div class="mob-meta">Stok: 0 buah • <span class="text-danger fw-bold">Habis</span></div>
-                        <div class="mob-price">Rp 18.000</div>
-                    </div>
-                    <div class="mob-actions">
-                        <a href="#" class="btn-action-sm icon-blue"><i class="fa-solid fa-pen"></i></a>
-                        <button class="btn-action-sm icon-red" style="background:#FDEDEC;"><i class="fa-regular fa-trash-can"></i></button>
-                    </div>
-                </div>
+                <?php 
+                    endwhile;
+                else: 
+                ?>
+                    <p class="text-muted text-center py-3">Belum ada produk.</p>
+                <?php endif; ?>
             </div>
 
             <div class="pagination-wrapper">
@@ -250,34 +235,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
-    <script>
-        // Init AOS Animation
-        AOS.init({ once: true, offset: 50 });
-
-        // Logic Filter Pills Active State
-        const pills = document.querySelectorAll('.btn-pill');
-        pills.forEach(pill => {
-            pill.addEventListener('click', function() {
-                pills.forEach(p => p.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        // Buka Tutup Submenu Sidebar
-        const toggleProduk = document.getElementById('toggleProduk');
-        const submenuProduk = document.getElementById('submenuProduk');
-        const iconProduk = document.getElementById('iconProduk');
-
-        toggleProduk.addEventListener('click', function(e) {
-            e.preventDefault();
-            submenuProduk.classList.toggle('show');
-            if(submenuProduk.classList.contains('show')) {
-                iconProduk.classList.replace('fa-chevron-down', 'fa-chevron-up');
-            } else {
-                iconProduk.classList.replace('fa-chevron-up', 'fa-chevron-down');
-            }
-        });
-    </script>
+    <script src="../assets/js/admin_kelola_produk.js"></script>
 </body>
 </html>

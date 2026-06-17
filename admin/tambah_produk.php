@@ -1,3 +1,14 @@
+<?php
+include_once("../config.php");
+// Proteksi Admin
+if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
+    header('Location: ../index.php');
+    exit();
+}
+
+$q_kategori = mysqli_query($conn, "SELECT * FROM kategori_roti");
+$pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM pesanan WHERE status='pending'"))['cnt'];
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -19,24 +30,37 @@
 </head>
 <body>
 
-    <aside class="sidebar d-none d-lg-flex">
+    <aside class="sidebar d-none d-lg-flex" id="sidebar">
         <a href="#" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
         </a>
         <ul class="sidebar-menu">
-            <li><a href="index.php"class="fa-solid fa-border-all"></i> Dashboard</a></li>
-            <li><a href="#" class="active"><i class="fa-solid fa-box-open"></i> Kelola Produk</a></li>
-            <li><a href="#"><i class="fa-solid fa-clipboard-list"></i> Kelola Pesanan <span class="badge-notif">5</span></a></li>
+            <li><a href="index.php"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+            
+            <li class="has-submenu">
+                <a href="kelola_produk.php" id="toggleProduk">
+                    <div class="menu-left"><i class="fa-solid fa-box"></i> Kelola Produk</div>
+                    <i class="fa-solid fa-chevron-up" id="iconProduk" style="font-size: 0.7rem;"></i>
+                </a>
+                <ul class="submenu show" id="submenuProduk">
+                    <li><a href="kelola_produk.php"><i class="fa-solid fa-list" style="font-size: 0.65rem; margin-right: 5px;"></i> Daftar Produk</a></li>
+                    <li><a href="tambah_produk.php" class="active"><i class="fa-solid fa-plus" style="font-size: 0.65rem; margin-right: 5px;"></i> Tambah Produk</a></li>
+                    <li><a href="kelola_kategori.php"><i class="fa-solid fa-tags" style="font-size: 0.65rem; margin-right: 5px;"></i> Kel. Kategori</a></li>
+                </ul>
+            </li>
+
+            <li><a href="kelola_pesanan.php"><i class="fa-solid fa-clipboard-list"></i> Kelola Pesanan <?php if($pesanan_pending > 0): ?><span class="badge-notif"><?= $pesanan_pending; ?></span><?php endif; ?></a></li>
         </ul>
         <div class="sidebar-footer">
             <div class="user-info">
                 <div class="avatar-circle">AD</div>
                 <div class="user-details">
-                    <h6>Admin</h6><p>admin@rotinusantara.com</p>
+                    <h6>Admin Utama</h6>
+                    <p>admin@rotinusantara.com</p>
                 </div>
             </div>
-            <a href="login.html" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar</a>
+            <a href="../logout.php" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar</a>
         </div>
     </aside>
 
@@ -44,8 +68,8 @@
         
         <header class="top-header">
             <div class="header-left">
-                <button class="btn-menu-mobile d-lg-none"><i class="fa-solid fa-bars"></i></button>
-                <a href="#" class="btn-back d-none d-md-flex"><i class="fa-solid fa-arrow-left"></i> Kelola Produk</a>
+                <button class="btn-menu-mobile d-lg-none" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+                <a href="kelola_produk.php" class="btn-back d-none d-md-flex"><i class="fa-solid fa-arrow-left"></i> Kelola Produk</a>
                 <div class="page-title">
                     <h2>Tambah Produk Baru</h2>
                     <p class="d-none d-md-block">Admin &rsaquo; Kelola Produk &rsaquo; Tambah Produk</p>
@@ -54,6 +78,7 @@
             <div class="avatar-circle d-lg-none" style="width:35px; height:35px; font-size:0.8rem;">AD</div>
         </header>
 
+        <form id="productForm" action="proses_tambah_produk.php" method="POST" enctype="multipart/form-data">
         <div class="row g-4">
             
             <div class="col-lg-7 col-xl-8">
@@ -62,22 +87,19 @@
                     <div class="card-header-title">
                         <i class="fa-solid fa-wheat-awn"></i> Informasi Dasar Produk
                     </div>
-                    
-                    <form id="productForm">
                         <div class="mb-4">
                             <label class="form-label">Nama Produk <span class="text-asterisk">*</span></label>
-                            <input type="text" class="form-control" id="inputNama" placeholder="Contoh: Roti Cokelat Premium" maxlength="100">
+                            <input type="text" class="form-control" name="nama_produk" id="inputNama" placeholder="Contoh: Roti Cokelat Premium" maxlength="100">
                             <div class="char-counter"><span id="countNama">0</span>/100</div>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label">Kategori Roti <span class="text-asterisk">*</span></label>
-                            <select class="form-select" id="inputKategori">
+                            <select class="form-select" name="id_kategori" id="inputKategori" required>
                                 <option value="" selected disabled>Pilih kategori...</option>
-                                <option value="Roti Tawar">Roti Tawar</option>
-                                <option value="Roti Manis">Roti Manis</option>
-                                <option value="Roti Gurih">Roti Gurih</option>
-                                <option value="Kue Kering">Kue Kering</option>
+                                <?php while($kat = mysqli_fetch_assoc($q_kategori)): ?>
+                                    <option value="<?= $kat['id_kategori']; ?>"><?= htmlspecialchars($kat['nama_kategori']); ?></option>
+                                <?php endwhile; ?>
                             </select>
                         </div>
 
@@ -85,7 +107,7 @@
                             <label class="form-label">Harga Produk <span class="text-asterisk">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-white border-end-0">Rp</span>
-                                <input type="number" class="form-control border-start-0 ps-0" id="inputHarga" placeholder="0" min="0">
+                                <input type="number" class="form-control border-start-0 ps-0" name="harga" id="inputHarga" placeholder="0" min="0">
                             </div>
                         </div>
 
@@ -93,7 +115,7 @@
                             <label class="form-label">Stok Awal <span class="text-asterisk">*</span></label>
                             <div class="input-stok-group">
                                 <button type="button" class="btn-stok" onclick="updateStok(-1)"><i class="fa-solid fa-minus"></i></button>
-                                <input type="number" class="input-stok" id="inputStok" value="0" min="0">
+                                <input type="number" class="input-stok" name="stok" id="inputStok" value="0" min="0">
                                 <button type="button" class="btn-stok" onclick="updateStok(1)"><i class="fa-solid fa-plus"></i></button>
                             </div>
                             <div class="stok-warning" id="stokWarning">
@@ -103,10 +125,9 @@
 
                         <div class="mb-2">
                             <label class="form-label">Deskripsi Produk</label>
-                            <textarea class="form-control" id="inputDeskripsi" rows="4" placeholder="Tuliskan deskripsi produk secara detail..." maxlength="500"></textarea>
+                            <textarea class="form-control" name="deskripsi" id="inputDeskripsi" rows="4" placeholder="Tuliskan deskripsi produk secara detail..." maxlength="500"></textarea>
                             <div class="char-counter text-end"><span id="countDeskripsi">0</span>/500</div>
                         </div>
-                    </form>
                 </div>
 
                 <div class="admin-card d-lg-none" data-aos="fade-up">
@@ -135,8 +156,8 @@
                         <div class="drag-drop-icon"><i class="fa-regular fa-image"></i></div>
                         <p>Drag & drop gambar di sini</p>
                         <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 15px;">atau</p>
-                        <button class="btn-pilih-file" onclick="document.getElementById('fileInput').click()">Pilih File</button>
-                        <input type="file" id="fileInput" hidden accept="image/png, image/jpeg, image/webp">
+                        <button type="button" class="btn-pilih-file" onclick="document.getElementById('fileInput').click()">Pilih File</button>
+                        <input type="file" id="fileInput" name="gambar_produk" hidden accept="image/png, image/jpeg, image/webp">
                     </div>
                     <div class="file-format-text">Format: JPG, PNG, WEBP • Maks. 2MB</div>
                 </div>
@@ -152,7 +173,7 @@
                             <p>Produk akan muncul di halaman katalog</p>
                         </div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="toggleKatalog" checked>
+                            <input class="form-check-input" type="checkbox" id="toggleKatalog" name="is_tampil" value="1" checked>
                         </div>
                     </div>
                     
@@ -162,7 +183,7 @@
                             <p>Produk tampil di beranda utama</p>
                         </div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="toggleUnggulan">
+                            <input class="form-check-input" type="checkbox" id="toggleUnggulan" name="is_unggulan" value="1">
                         </div>
                     </div>
 
@@ -184,127 +205,21 @@
 
             </div>
         </div>
+        </form>
 
     </main>
 
     <div class="bottom-action-bar">
         <div class="wajib-text"><span>*</span> Wajib diisi</div>
         <div class="action-buttons">
-            <button type="button" class="btn-action btn-batal">Batal</button>
+            <a href="kelola_produk.php" class="btn-action btn-batal text-decoration-none d-inline-flex align-items-center justify-content-center">Batal</a>
             <button type="button" class="btn-action btn-draft">Simpan Draft</button>
-            <button type="button" class="btn-action btn-publish">Simpan & Publikasikan</button>
+            <button type="submit" form="productForm" class="btn-action btn-publish">Simpan & Publikasikan</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
-    <script>
-        AOS.init({ once: true, offset: 50 });
-
-        // Set Current Date
-        const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', dateOptions);
-
-        // Character Counters & Preview Update
-        const inputNama = document.getElementById('inputNama');
-        const countNama = document.getElementById('countNama');
-        const prevNama = document.getElementById('prevNama');
-        
-        inputNama.addEventListener('input', function() {
-            countNama.innerText = this.value.length;
-            prevNama.innerText = this.value || '—';
-        });
-
-        const inputDeskripsi = document.getElementById('inputDeskripsi');
-        const countDeskripsi = document.getElementById('countDeskripsi');
-        inputDeskripsi.addEventListener('input', function() {
-            countDeskripsi.innerText = this.value.length;
-        });
-
-        // Kategori Preview
-        document.getElementById('inputKategori').addEventListener('change', function() {
-            document.getElementById('prevKategori').innerText = this.value || '—';
-        });
-
-        // Harga Preview
-        document.getElementById('inputHarga').addEventListener('input', function() {
-            let val = parseInt(this.value);
-            document.getElementById('prevHarga').innerText = isNaN(val) ? 'Rp 0' : 'Rp ' + val.toLocaleString('id-ID');
-        });
-
-        // Stok Logic
-        const inputStok = document.getElementById('inputStok');
-        const stokWarning = document.getElementById('stokWarning');
-        const prevStok = document.getElementById('prevStok');
-        const prevStatus = document.getElementById('prevStatus');
-
-        function updateStok(change) {
-            let currentVal = parseInt(inputStok.value) || 0;
-            let newVal = currentVal + change;
-            if (newVal >= 0) {
-                inputStok.value = newVal;
-                checkStokWarning(newVal);
-            }
-        }
-
-        inputStok.addEventListener('input', function() {
-            let val = parseInt(this.value) || 0;
-            if(val < 0) { this.value = 0; val = 0; }
-            checkStokWarning(val);
-        });
-
-        function checkStokWarning(val) {
-            // Update Warning Text
-            if (val === 0) {
-                stokWarning.style.display = 'flex';
-                prevStatus.innerHTML = '<i class="fa-solid fa-xmark"></i> Habis';
-                prevStatus.style.background = '#FEE4E2'; prevStatus.style.color = '#E74C3C';
-            } else {
-                stokWarning.style.display = 'none';
-                prevStatus.innerHTML = '<i class="fa-solid fa-check"></i> Tersedia';
-                prevStatus.style.background = '#D1FADF'; prevStatus.style.color = '#039855';
-            }
-            // Update Preview
-            prevStok.innerText = val;
-        }
-
-        // Drag and Drop Logic
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
-        });
-
-        dropZone.addEventListener('drop', function(e) {
-            let dt = e.dataTransfer;
-            let files = dt.files;
-            handleFiles(files);
-        });
-
-        fileInput.addEventListener('change', function() {
-            handleFiles(this.files);
-        });
-
-        function handleFiles(files) {
-            if (files.length > 0) {
-                let fileName = files[0].name;
-                dropZone.innerHTML = `<div class="drag-drop-icon" style="color:var(--primary-color);"><i class="fa-solid fa-image"></i></div>
-                                      <p style="color:var(--primary-color); font-weight:600;">${fileName}</p>
-                                      <button class="btn-pilih-file mt-2" onclick="document.getElementById('fileInput').click()">Ganti File</button>`;
-            }
-        }
-    </script>
+    <script src="../assets/js/admin_tambah_produk.js"></script>
 </body>
 </html>

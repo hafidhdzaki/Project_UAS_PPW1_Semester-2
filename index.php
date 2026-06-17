@@ -1,3 +1,15 @@
+<?php
+include_once("config.php");
+
+// Ambil 4 produk yang ditandai sebagai "Produk Unggulan" oleh Admin
+$q_unggulan = mysqli_query($conn, "
+    SELECT p.*, k.nama_kategori 
+    FROM produk_roti p 
+    JOIN kategori_roti k ON p.id_kategori = k.id_kategori 
+    WHERE p.is_tampil = 1 AND p.is_unggulan = 1 
+    LIMIT 4
+");
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -20,15 +32,47 @@
             <a class="navbar-brand" href="#">
                 <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link active" href="#">Beranda</a></li>
                     <li class="nav-item"><a class="nav-link" href="katalog.php">Katalog</a></li>
+                    <?php if(isLoggedIn()): ?>
+                        <?php if($_SESSION['role'] === 'admin'): ?>
+                            <li class="nav-item d-lg-none"><a class="nav-link text-warning fw-bold" href="admin/index.php"><i class="fa-solid fa-gauge me-2"></i>Panel Admin</a></li>
+                        <?php else: ?>
+                            <li class="nav-item d-lg-none"><a class="nav-link" href="keranjang.php"><i class="fa-solid fa-cart-shopping me-2"></i>Keranjang</a></li>
+                        <?php endif; ?>
+                        <li class="nav-item d-lg-none"><a class="nav-link text-danger" href="logout.php"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Keluar (<?= htmlspecialchars($_SESSION['full_name']); ?>)</a></li>
+                    <?php else: ?>
+                        <li class="nav-item d-lg-none"><a class="nav-link" href="login.php"><i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Masuk</a></li>
+                    <?php endif; ?>
                 </ul>
-                <a href="login.php" class="btn btn-outline-primary-custom d-none d-lg-block">Masuk</a>
+                <div class="d-none d-lg-flex align-items-center gap-3">
+                    <?php if(isLoggedIn()): ?>
+                        <?php if($_SESSION['role'] === 'admin'): ?>
+                            <a href="admin/index.php" class="btn btn-warning text-white" style="border-radius: 25px; padding: 6px 20px; font-weight:600;">Panel Admin</a>
+                        <?php else: ?>
+                            <a href="keranjang.php" class="nav-link position-relative me-3 text-dark" title="Keranjang Belanja">
+                                <i class="fa-solid fa-cart-shopping fs-5"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                    <?php 
+                                    $id_user_cart = $_SESSION['user_id'];
+                                    $q_cart_count = mysqli_query($conn, "SELECT SUM(qty) as total FROM keranjang WHERE id_user='$id_user_cart'");
+                                    $r_cart_count = mysqli_fetch_assoc($q_cart_count);
+                                    echo $r_cart_count['total'] ? $r_cart_count['total'] : '0';
+                                    ?>
+                                </span>
+                            </a>
+                        <?php endif; ?>
+                        <span class="fw-medium text-dark">Halo, <?= htmlspecialchars($_SESSION['full_name']); ?>!</span>
+                        <a href="logout.php" class="btn btn-outline-danger" style="border-radius: 25px; padding: 6px 20px; font-weight:600;">Keluar</a>
+                    <?php else: ?>
+                        <a href="login.php" class="btn-outline-primary-custom">Masuk</a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </nav>
@@ -39,7 +83,7 @@
                 <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
                     <h1 class="hero-title">Roti Segar<br>Setiap Hari</h1>
                     <p class="hero-text">Pesan roti favoritmu dengan mudah. Dibuat dengan cinta, dikirim ke pintu rumahmu.</p>
-                    <a href="#" class="btn btn-hero">Lihat Katalog <i class="fa-solid fa-chevron-right ms-2"></i></a>
+                    <a href="katalog.php" class="btn btn-hero">Lihat Katalog <i class="fa-solid fa-chevron-right ms-2"></i></a>
                     
                     <div class="hero-stats">
                         <div class="stat-item">
@@ -105,115 +149,46 @@
             <p class="text-muted max-w-50 mx-auto">Dari roti tawar premium hingga pastry artisan — setiap produk dibuat dengan standar kualitas tertinggi.</p>
         </div>
         
-        <div class="row g-4">
-            <div class="col-12 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="card product-card">
-                    <div class="product-img-wrapper">
-                        <span class="badge-status bg-tersedia"><i class="fa-solid fa-check-circle me-1"></i> Tersedia</span>
-                        <img src="https://images.unsplash.com/photo-1598373182133-52452f7691ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Roti Tawar">
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Roti Tawar</p>
-                        <h5 class="product-title">Roti Tawar Susu Premium</h5>
-                        <p class="product-desc">Tekstur lembut dengan aroma susu segar yang menggugah selera, cocok untuk sarapan keluarga.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <h4 class="product-price">Rp 28.000</h4>
-                            <button class="btn btn-detail">Lihat Detail</button>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mt-4 justify-content-center">
+            <?php if(mysqli_num_rows($q_unggulan) > 0): ?>
+                <?php while($row = mysqli_fetch_assoc($q_unggulan)): ?>
+                    <div class="col" data-aos="fade-up">
+                        <div class="card product-card">
+                            <div class="product-img-wrapper">
+                                <span class="badge-kategori"><?= htmlspecialchars($row['nama_kategori']); ?></span>
+                                
+                                <?php if($row['stok'] > 5): ?>
+                                    <span class="badge-status bg-tersedia"><i class="fa-solid fa-check"></i> Tersedia</span>
+                                <?php elseif($row['stok'] > 0 && $row['stok'] <= 5): ?>
+                                    <span class="badge-status bg-hampir-habis"><i class="fa-solid fa-fire"></i> Hampir Habis</span>
+                                <?php else: ?>
+                                    <span class="badge-status bg-habis"><i class="fa-solid fa-xmark"></i> Habis</span>
+                                <?php endif; ?>
+
+                                <img src="<?= htmlspecialchars($row['gambar'] != '' ? 'admin/' . $row['gambar'] : 'https://via.placeholder.com/600'); ?>" alt="<?= htmlspecialchars($row['nama_produk']); ?>">
+                            </div>
+                            <div class="product-body">
+                                <h3 class="product-title text-truncate" title="<?= htmlspecialchars($row['nama_produk']); ?>">
+                                    <?= htmlspecialchars($row['nama_produk']); ?>
+                                </h3>
+                                <p class="product-desc line-clamp-2">
+                                    <?= htmlspecialchars($row['deskripsi']); ?>
+                                </p>
+                                <div class="mt-auto">
+                                    <div class="product-price">Rp <?= number_format($row['harga'], 0, ',', '.'); ?></div>
+                                    <a href="detail_produk.php?id=<?= $row['id_produk']; ?>" class="btn-card-action d-block text-center text-decoration-none">
+                                        <i class="fa-regular fa-eye me-1"></i> Lihat Detail
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="col-12 text-center py-5">
+                    <h5 class="text-muted">Belum ada produk unggulan yang ditampilkan.</h5>
                 </div>
-            </div>
-
-            <div class="col-12 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="card product-card">
-                    <div class="product-img-wrapper">
-                        <span class="badge-status bg-hampir-habis"><i class="fa-solid fa-clock me-1"></i> Hampir Habis</span>
-                        <img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Croissant">
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Roti Manis</p>
-                        <h5 class="product-title">Croissant Butter Klasik</h5>
-                        <p class="product-desc">Berlapis-lapis dengan butter Prancis pilihan, renyah di luar lembut di dalam.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <h4 class="product-price">Rp 22.000</h4>
-                            <button class="btn btn-detail">Lihat Detail</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="card product-card">
-                    <div class="product-img-wrapper">
-                        <span class="badge-status bg-tersedia"><i class="fa-solid fa-check-circle me-1"></i> Tersedia</span>
-                        <img src="https://images.unsplash.com/photo-1589367920969-ab8e050eb0e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Sourdough">
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Roti Gurih</p>
-                        <h5 class="product-title">Sourdough Artisan</h5>
-                        <p class="product-desc">Fermentasi alami 24 jam, kulit renyah dengan crumb yang chewy dan sempurna.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <h4 class="product-price">Rp 45.000</h4>
-                            <button class="btn btn-detail">Lihat Detail</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="card product-card">
-                    <div class="product-img-wrapper">
-                        <span class="badge-status bg-habis"><i class="fa-solid fa-times-circle me-1"></i> Habis</span>
-                        <img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Donut">
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Roti Manis</p>
-                        <h5 class="product-title">Roti Pisang Coklat</h5>
-                        <p class="product-desc">Paduan pisang matang dan coklat premium, sarapan favoritmu setiap pagi.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <h4 class="product-price">Rp 18.000</h4>
-                            <button class="btn btn-detail disabled">Lihat Detail</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="card product-card">
-                    <div class="product-img-wrapper">
-                        <span class="badge-status bg-tersedia"><i class="fa-solid fa-check-circle me-1"></i> Tersedia</span>
-                        <img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Cookies">
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Kue Kering</p>
-                        <h5 class="product-title">Kue Nastar Nanas</h5>
-                        <p class="product-desc">Selai nanas segar dibungkus adonan renyah, tekstur sempurna di setiap gigitan.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <h4 class="product-price">Rp 85.000</h4>
-                            <button class="btn btn-detail">Lihat Detail</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="card product-card">
-                    <div class="product-img-wrapper">
-                        <span class="badge-status bg-hampir-habis"><i class="fa-solid fa-clock me-1"></i> Hampir Habis</span>
-                        <img src="https://images.unsplash.com/photo-1603532648955-039310d9ed75?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Pain au Chocolat">
-                    </div>
-                    <div class="product-body">
-                        <p class="product-category">Roti Manis</p>
-                        <h5 class="product-title">Pain au Chocolat</h5>
-                        <p class="product-desc">Pastry Paris yang otentik dengan coklat dark premium di setiap lapisan adonan.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <h4 class="product-price">Rp 32.000</h4>
-                            <button class="btn btn-detail">Lihat Detail</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <?php endif; ?>
         </div>
     </section>
 
@@ -261,8 +236,8 @@
                     <h6>Tautan</h6>
                     <ul>
                         <li><a href="#">Beranda</a></li>
-                        <li><a href="#">Katalog</a></li>
-                        <li><a href="#">Masuk</a></li>
+                        <li><a href="katalog.php">Katalog</a></li>
+                        <li><a href="login.php">Masuk</a></li>
                     </ul>
                 </div>
             </div>
@@ -272,7 +247,7 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.css"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>

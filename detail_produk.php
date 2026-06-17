@@ -1,305 +1,172 @@
+<?php 
+include_once("config.php"); 
+
+// Ambil ID produk dari URL (misal: detail_produk.php?id=1)
+$id_produk = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+// Ambil data dari database
+$query = "SELECT p.*, k.nama_kategori FROM produk_roti p JOIN kategori_roti k ON p.id_kategori = k.id_kategori WHERE p.id_produk = '$id_produk'";
+$result = mysqli_query($conn, $query);
+
+// Jika produk tidak ditemukan, kembalikan ke katalog
+if(mysqli_num_rows($result) == 0) {
+    header('Location: katalog.php');
+    exit();
+}
+$data = mysqli_fetch_assoc($result);
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roti Tawar Susu Premium - Roti Nusantara</title>
+    <title><?= htmlspecialchars($data['nama_produk']); ?> - Roti Nusantara</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
     <link href="assets/css/style_detail_produk.css" rel="stylesheet">
 </head>
 <body>
 
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
-            </a>
+            <a class="navbar-brand" href="index.php"><i class="fa-solid fa-bread-slice"></i> Roti Nusantara</a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="katalog.html">Katalog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="katalog.php">Katalog</a></li>
+                    <?php if(isLoggedIn()): ?>
+                        <?php if($_SESSION['role'] === 'admin'): ?>
+                            <li class="nav-item d-lg-none"><a class="nav-link text-warning fw-bold" href="admin/index.php"><i class="fa-solid fa-gauge me-2"></i>Panel Admin</a></li>
+                        <?php else: ?>
+                            <li class="nav-item d-lg-none"><a class="nav-link" href="keranjang.php"><i class="fa-solid fa-cart-shopping me-2"></i>Keranjang</a></li>
+                        <?php endif; ?>
+                        <li class="nav-item d-lg-none"><a class="nav-link text-danger" href="logout.php"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Keluar (<?= htmlspecialchars($_SESSION['full_name']); ?>)</a></li>
+                    <?php else: ?>
+                        <li class="nav-item d-lg-none"><a class="nav-link" href="login.php"><i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Masuk</a></li>
+                    <?php endif; ?>
                 </ul>
-                <a href="login.html" class="btn btn-outline-primary-custom d-none d-lg-block">Masuk</a>
+                <div class="d-none d-lg-flex align-items-center gap-3">
+                    <?php if(isLoggedIn()): ?>
+                        <?php if($_SESSION['role'] === 'admin'): ?>
+                            <a href="admin/index.php" class="btn btn-warning text-white" style="border-radius: 25px; padding: 6px 20px; font-weight:600;">Panel Admin</a>
+                        <?php else: ?>
+                            <a href="keranjang.php" class="nav-link position-relative me-3 text-dark" title="Keranjang Belanja">
+                                <i class="fa-solid fa-cart-shopping fs-5"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                    <?php 
+                                    $id_user_cart = $_SESSION['user_id'];
+                                    $q_cart_count = mysqli_query($conn, "SELECT SUM(qty) as total FROM keranjang WHERE id_user='$id_user_cart'");
+                                    $r_cart_count = mysqli_fetch_assoc($q_cart_count);
+                                    echo $r_cart_count['total'] ? $r_cart_count['total'] : '0';
+                                    ?>
+                                </span>
+                            </a>
+                        <?php endif; ?>
+                        <span class="fw-medium text-dark">Halo, <?= htmlspecialchars($_SESSION['full_name']); ?>!</span>
+                        <a href="logout.php" class="btn btn-outline-danger" style="border-radius: 25px; padding: 6px 20px; font-weight:600;">Keluar</a>
+                    <?php else: ?>
+                        <a href="login.php" class="btn btn-outline-primary-custom">Masuk</a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </nav>
 
     <div class="container mt-2">
-        
         <nav aria-label="breadcrumb" data-aos="fade-down">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.html">Beranda</a></li>
-                <li class="breadcrumb-item"><a href="katalog.html">Katalog</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Roti Tawar Susu Premium</li>
+                <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="katalog.php">Katalog</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><?= htmlspecialchars($data['nama_produk']); ?></li>
             </ol>
         </nav>
 
         <div class="row g-4 g-lg-5">
-            
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="main-image-wrapper">
-                    <span class="badge-kategori-img">Roti Tawar</span>
-                    <span class="badge-status-img"><i class="fa-solid fa-check"></i> Tersedia</span>
-                    <img id="mainImage" src="https://images.unsplash.com/photo-1598373182133-52452f7691ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Roti Tawar Susu Premium">
-                </div>
-                <div class="thumbnail-container">
-                    <img src="https://images.unsplash.com/photo-1598373182133-52452f7691ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="thumbnail active" onclick="changeImage(this)" alt="Thumb 1">
-                    <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="thumbnail" onclick="changeImage(this)" alt="Thumb 2">
-                    <img src="https://images.unsplash.com/photo-1614088463870-7634f19b6d85?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="thumbnail" onclick="changeImage(this)" alt="Thumb 3">
-                    <img src="https://images.unsplash.com/photo-1549931319-a545dcf3bc73?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="thumbnail" onclick="changeImage(this)" alt="Thumb 4">
+                    <span class="badge-kategori-img"><?= htmlspecialchars($data['nama_kategori']); ?></span>
+                    <?php if($data['stok'] > 0): ?>
+                        <span class="badge-status-img"><i class="fa-solid fa-check"></i> Tersedia</span>
+                    <?php else: ?>
+                        <span class="badge-status-img" style="background:#FEE4E2; color:#E74C3C;"><i class="fa-solid fa-xmark"></i> Habis</span>
+                    <?php endif; ?>
+                    <img id="mainImage" src="<?= htmlspecialchars($data['gambar'] ? 'admin/' . $data['gambar'] : 'https://via.placeholder.com/800'); ?>" alt="Produk">
                 </div>
             </div>
 
             <div class="col-lg-6" data-aos="fade-left">
-                
-                <span class="product-badge-text">Roti Tawar</span>
-                <h1 class="product-title">Roti Tawar Susu Premium</h1>
+                <span class="product-badge-text"><?= htmlspecialchars($data['nama_kategori']); ?></span>
+                <h1 class="product-title"><?= htmlspecialchars($data['nama_produk']); ?></h1>
                 
                 <div class="rating-box">
                     <div class="stars">
                         <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
                     </div>
-                    <span class="rating-text">4.8</span>
-                    <span class="review-count">(24 ulasan)</span>
+                    <span class="rating-text">4.8</span> <span class="review-count">(Bohongan)</span>
                 </div>
 
                 <div class="product-price">
-                    Rp 28.000 <span class="price-unit">/ buah</span>
+                    Rp <?= number_format($data['harga'], 0, ',', '.'); ?> <span class="price-unit">/ buah</span>
                 </div>
                 
-                <div class="stock-status">
-                    <i class="fa-solid fa-box-open"></i> Stok tersedia: 45 buah
+                <div class="stock-status <?= $data['stok'] > 0 ? '' : 'text-danger'; ?>">
+                    <i class="fa-solid fa-box-open"></i> Stok tersedia: <?= $data['stok']; ?> buah
                 </div>
 
-                <div class="product-desc-short">
+                <div class="product-desc-short mb-4">
                     <strong>Deskripsi Produk</strong><br>
-                    Tekstur lembut dengan aroma susu segar yang menggugah selera, cocok untuk sarapan keluarga. Setiap produk Roti Nusantara dibuat dengan standar kualitas tinggi menggunakan bahan-bahan pilihan yang segar dan alami. Dipanggang setiap hari... <a href="#details" class="link-more">Selengkapnya ></a>
+                    <?= nl2br(htmlspecialchars($data['deskripsi'])); ?>
                 </div>
 
-                <div class="action-box">
+                <form action="tambah_keranjang.php" method="POST" class="action-box">
+                    <input type="hidden" name="id_produk" value="<?= $data['id_produk']; ?>">
+                    
                     <label class="qty-label">Jumlah</label>
                     <div class="qty-selector">
-                        <button class="btn-qty" onclick="updateQty(-1)">-</button>
-                        <input type="text" class="input-qty" id="qtyInput" value="1" readonly>
-                        <button class="btn-qty" onclick="updateQty(1)">+</button>
+                        <button type="button" class="btn-qty" onclick="updateQty(-1)">-</button>
+                        <input type="text" class="input-qty" id="qtyInput" name="qty" value="1" readonly>
+                        <button type="button" class="btn-qty" onclick="updateQty(1)">+</button>
                     </div>
 
                     <div class="total-box">
                         <span class="total-label">Total Pembayaran</span>
-                        <span class="total-price" id="totalPrice">Rp 28.000</span>
+                        <span class="total-price" id="totalPrice">Rp <?= number_format($data['harga'], 0, ',', '.'); ?></span>
                     </div>
 
-                    <button class="btn-pesan"><i class="fa-solid fa-cart-shopping"></i> Pesan Sekarang</button>
-                    <button class="btn-wa"><i class="fa-brands fa-whatsapp"></i> Hubungi via WhatsApp</button>
-                </div>
-
-                <div class="share-actions">
-                    Bagikan: 
-                    <button class="btn-share"><i class="fa-regular fa-copy"></i> Salin Link</button>
-                    <button class="btn-share"><i class="fa-solid fa-share-nodes"></i> Bagikan</button>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="details-section" id="details" data-aos="fade-up">
-            
-            <div class="nav-tabs-custom">
-                <div class="nav-item-custom active">Deskripsi</div>
-                <div class="nav-item-custom">Informasi</div>
-                <div class="nav-item-custom">Ulasan (24)</div>
-            </div>
-
-            <div class="tab-content-area">
-                <p class="tab-content-text">
-                    Produk unggulan Roti Nusantara yang dibuat dengan cinta menggunakan bahan-bahan berkualitas tinggi. Setiap tahap produksi kami jaga dengan ketat untuk memastikan rasa dan tekstur yang konsisten sempurna setiap harinya. Roti tawar ini sangat cocok disajikan dengan selai favorit Anda atau dipanggang untuk sarapan yang hangat.
-                </p>
-
-                <h6 class="fw-bold mb-3">Bahan-bahan:</h6>
-                <ul class="ingredients-list">
-                    <li>Tepung terigu premium</li>
-                    <li>Susu segar full cream</li>
-                    <li>Ragi alami</li>
-                    <li>Gula tebu</li>
-                    <li>Mentega tawar</li>
-                    <li>Garam laut</li>
-                    <li>Telur ayam kampung</li>
-                </ul>
-
-                <h6 class="fw-bold mb-3 mt-4">Informasi Nutrisi (per sajian):</h6>
-                <div class="nutrition-grid">
-                    <div class="nutrition-card">
-                        <div class="nutrition-icon icon-fire"><i class="fa-solid fa-fire"></i></div>
-                        <p class="nutrition-val">180 kkal</p>
-                        <p class="nutrition-label">Kalori</p>
-                    </div>
-                    <div class="nutrition-card">
-                        <div class="nutrition-icon icon-muscle"><i class="fa-solid fa-dumbbell"></i></div>
-                        <p class="nutrition-val">6 g</p>
-                        <p class="nutrition-label">Protein</p>
-                    </div>
-                    <div class="nutrition-card">
-                        <div class="nutrition-icon icon-wheat"><i class="fa-solid fa-wheat-awn"></i></div>
-                        <p class="nutrition-val">32 g</p>
-                        <p class="nutrition-label">Karbohidrat</p>
-                    </div>
-                    <div class="nutrition-card">
-                        <div class="nutrition-icon icon-drop"><i class="fa-solid fa-droplet"></i></div>
-                        <p class="nutrition-val">4 g</p>
-                        <p class="nutrition-label">Lemak</p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="related-products mb-5" data-aos="fade-up">
-            <div class="section-title-box">
-                <h3 class="section-title">Produk Lainnya dari Kategori Ini</h3>
-                <div class="slider-nav">
-                    <button class="btn-slider"><i class="fa-solid fa-chevron-left"></i></button>
-                    <button class="btn-slider"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-6 col-md-4 col-lg-3">
-                    <a href="#" class="card product-card">
-                        <div class="product-img-wrapper">
-                            <span class="badge-status">Tersedia</span>
-                            <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Roti Gandum">
-                        </div>
-                        <div class="product-body">
-                            <h5 class="product-title-card">Roti Gandum Whole Wheat</h5>
-                            <p class="product-price-card">Rp 35.000</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-3">
-                    <a href="#" class="card product-card">
-                        <div class="product-img-wrapper">
-                            <span class="badge-status">Tersedia</span>
-                            <img src="https://images.unsplash.com/photo-1614088463870-7634f19b6d85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Roti Pandan">
-                        </div>
-                        <div class="product-body">
-                            <h5 class="product-title-card">Roti Tawar Pandan</h5>
-                            <p class="product-price-card">Rp 30.000</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-3 d-none d-md-block">
-                    <a href="#" class="card product-card">
-                        <div class="product-img-wrapper">
-                            <span class="badge-status">Tersedia</span>
-                            <img src="https://images.unsplash.com/photo-1549931319-a545dcf3bc73?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Roti Sisir">
-                        </div>
-                        <div class="product-body">
-                            <h5 class="product-title-card">Roti Sisir Mentega</h5>
-                            <p class="product-price-card">Rp 25.000</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="sticky-bottom-bar">
-        <div class="sticky-content container">
-            <div class="sticky-prod-info">
-                <img src="https://images.unsplash.com/photo-1598373182133-52452f7691ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" class="sticky-img" alt="Thumb">
-                <div class="sticky-text">
-                    <h6>Roti Tawar Susu Premium</h6>
-                    <p id="stickyPriceText">Rp 28.000</p>
-                </div>
-            </div>
-            
-            <div class="sticky-actions">
-                <div class="sticky-qty-selector">
-                    <button class="sticky-btn-qty" onclick="updateQty(-1)">-</button>
-                    <input type="text" class="sticky-input-qty" id="stickyQtyInput" value="1" readonly>
-                    <button class="sticky-btn-qty" onclick="updateQty(1)">+</button>
-                </div>
-                <button class="btn btn-pesan m-0" style="padding: 10px 20px;">Pesan</button>
+                    <button type="submit" class="btn-pesan" <?= $data['stok'] == 0 ? 'disabled style="background:gray;"' : ''; ?>>
+                        <i class="fa-solid fa-cart-shopping"></i> Masukkan Keranjang
+                    </button>
+                </form>
             </div>
         </div>
     </div>
-
-    <footer>
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-6 col-md-12">
-                    <a href="index.html" class="footer-brand">
-                        <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
-                    </a>
-                    <p class="footer-text">Roti segar berkualitas tinggi, dipanggang dengan cinta setiap hari.</p>
-                    <p class="text-muted" style="font-size: 0.8rem;">&copy; 2026 Roti Nusantara. Hak cipta dilindungi.</p>
-                </div>
-                <div class="col-lg-2 col-md-4 offset-lg-4 footer-links">
-                    <h6>Tautan</h6>
-                    <ul>
-                        <li><a href="index.html">Beranda</a></li>
-                        <li><a href="katalog.html">Katalog</a></li>
-                        <li><a href="login.html">Masuk</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                Dibuat dengan <i class="fa-solid fa-heart" style="color: #e74c3c;"></i> sebagai proyek bakery lokal Indonesia
-            </div>
-        </div>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
     <script>
-        // Init AOS
         AOS.init({ once: true, offset: 30 });
 
-        // Logic Ganti Gambar Utama dari Thumbnail
-        function changeImage(element) {
-            // Hapus class active dari semua thumbnail
-            document.querySelectorAll('.thumbnail').forEach(img => img.classList.remove('active'));
-            // Tambah active ke thumbnail yang di-klik
-            element.classList.add('active');
-            // Ganti src gambar utama
-            document.getElementById('mainImage').src = element.src;
-        }
-
-        // Logic Kuantitas & Harga
-        const basePrice = 28000;
+        // JS DINAMIS BACA HARGA DAN STOK DARI DATABASE!
+        const basePrice = <?= $data['harga']; ?>;
+        const maxStok = <?= $data['stok']; ?>;
         let currentQty = 1;
 
         function updateQty(change) {
+            if(maxStok === 0) return; // Jika habis jangan jalan
+            
             let newQty = currentQty + change;
-            if(newQty >= 1 && newQty <= 45) { // Maksimal stok
+            if(newQty >= 1 && newQty <= maxStok) {
                 currentQty = newQty;
-                
-                // Update input desktop & mobile
                 document.getElementById('qtyInput').value = currentQty;
-                document.getElementById('stickyQtyInput').value = currentQty;
                 
-                // Hitung dan update total harga
                 let totalPrice = basePrice * currentQty;
-                let formattedPrice = 'Rp ' + totalPrice.toLocaleString('id-ID');
-                
-                document.getElementById('totalPrice').innerText = formattedPrice;
-                document.getElementById('stickyPriceText').innerText = formattedPrice;
+                document.getElementById('totalPrice').innerText = 'Rp ' + totalPrice.toLocaleString('id-ID');
             }
         }
     </script>

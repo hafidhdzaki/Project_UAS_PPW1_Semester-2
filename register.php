@@ -5,18 +5,14 @@ if (isLoggedIn()) {
     exit(); 
 }
 $errors = [];
+$success = "";
+
 if (isset($_POST['register'])) {
-    $username = mysqli_real_escape_string($conn,
-    $_POST['username']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $full_name = mysqli_real_escape_string($conn,
-    $_POST['full_name']);
+    $full_name = mysqli_real_escape_string($conn, $_POST['full_name']); // Pastikan di form HTML Anda name="full_name"
     $password = $_POST['password'];
     $confirm = $_POST['confirm_password'];
     // Validasi input
-    if (empty($username)) {
-        $errors[] = 'Username tidak boleh kosong';
-    }
     if (empty($email)) {
         $errors[] = 'Email tidak boleh kosong';
     } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -32,16 +28,21 @@ if (isset($_POST['register'])) {
         $errors[] = 'Konfirmasi password tidak cocok';
     }
     // Cek apakah username/email sudah terdaftar
-    $check = mysqli_query($conn, "SELECT id FROM users WHERE username='$username' OR email='$email'");
+    $check = mysqli_query($conn, "SELECT id_user FROM users WHERE email='$email'");
     if (mysqli_num_rows($check) > 0) {
-        $errors[] = 'Username atau email sudah terdaftar';
+        $errors[] = 'Email sudah terdaftar';
     }
     if (empty($errors)) {
         // Hash password sebelum disimpan
         $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (username, email, full_name, password) VALUES ('$username','$email','$full_name','$hashed')";
+        $sql = "INSERT INTO users (nama_lengkap, email, password, role) VALUES ('$full_name','$email','$hashed', 'pelanggan')";
         if (mysqli_query($conn, $sql)) {
-            $success = 'Registrasi berhasil! Silakan login.';
+            // Tampilkan pop-up sukses dan paksa pindah ke halaman login
+            echo "<script>
+                    alert('Pendaftaran akun berhasil! Silakan masuk menggunakan email Anda.');
+                    window.location.href = 'login.php';
+                  </script>";
+            exit();
         } else {
             $errors[] = 'Error: ' . mysqli_error($conn);
         }
@@ -72,7 +73,7 @@ if (isset($_POST['register'])) {
 
     <header data-aos="fade-down">
         <div class="container d-flex justify-content-center justify-content-md-start">
-            <a class="navbar-brand" href="index.html">
+            <a class="navbar-brand" href="index.php">
                 <i class="fa-solid fa-bread-slice"></i> Roti Nusantara
             </a>
         </div>
@@ -89,13 +90,23 @@ if (isset($_POST['register'])) {
                 </div>
 
                 <h2>Buat Akun Baru</h2>
-                <p class="login-prompt">Sudah punya akun? <a href="login.html">Masuk di sini</a></p>
+                <p class="login-prompt">Sudah punya akun? <a href="login.php">Masuk di sini</a></p>
 
-                <form action="proses_daftar.php" method="POST">
-                    
+                <form action="" method="POST">
+                    <?php if(!empty($errors)): ?>
+                        <div class="alert alert-danger" style="border-radius: 10px; font-size: 0.9rem;" role="alert">
+                            <?php foreach($errors as $err) echo "• " . $err . "<br>"; ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if(!empty($success)): ?>
+                        <div class="alert alert-success" style="border-radius: 10px; font-size: 0.9rem;" role="alert">
+                            <?= $success; ?>
+                        </div>
+                    <?php endif; ?>    
+
                     <div class="mb-3">
-                        <label for="nama" class="form-label">Nama Lengkap</label>
-                        <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
+                        <label for="full_name" class="form-label">Nama Lengkap</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" placeholder="Masukkan nama lengkap" required>
                     </div>
 
                     <div class="mb-3">
@@ -123,7 +134,7 @@ if (isset($_POST['register'])) {
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" name="register" class="btn btn-primary w-100">
                         Daftar Sekarang <i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i>
                     </button>
                     
@@ -131,7 +142,7 @@ if (isset($_POST['register'])) {
 
                 <div class="divider">atau</div>
 
-                <a href="login.html" class="btn btn-outline-primary w-100 text-decoration-none">
+                <a href="login.php" class="btn btn-outline-primary w-100 text-decoration-none">
                     Masuk dengan Akun yang Ada
                 </a>
 
