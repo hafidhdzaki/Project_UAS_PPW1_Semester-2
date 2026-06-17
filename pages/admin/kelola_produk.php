@@ -10,7 +10,7 @@ if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
 $limit = 10; // Tampilkan 10 produk per halaman
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 
-$total_all_query = mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti");
+$total_all_query = mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE is_tampil = 1");
 $total_all = mysqli_fetch_assoc($total_all_query)['cnt'];
 $total_records = $total_all;
 
@@ -26,6 +26,7 @@ $query_produk = "
     SELECT p.*, k.nama_kategori 
     FROM produk_roti p 
     JOIN kategori_roti k ON p.id_kategori = k.id_kategori 
+    WHERE p.is_tampil = 1
     ORDER BY p.id_produk DESC
     LIMIT $limit OFFSET $offset
 ";
@@ -39,10 +40,10 @@ function getPageUrl($p) {
 }
 
 // Hitung Statistik Produk
-$total_all = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti"))['cnt'];
+$total_all = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE is_tampil = 1"))['cnt'];
 $total_aktif = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE is_tampil = 1"))['cnt'];
-$total_habis = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE stok = 0"))['cnt'];
-$total_unggulan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE is_unggulan = 1"))['cnt'];
+$total_habis = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE stok = 0 AND is_tampil = 1"))['cnt'];
+$total_unggulan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM produk_roti WHERE is_unggulan = 1 AND is_tampil = 1"))['cnt'];
 
 // Count pending orders for badge
 $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cnt FROM pesanan WHERE status='pending'"))['cnt'];
@@ -145,6 +146,29 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
         </div>
 
         <div class="admin-card" data-aos="fade-up" data-aos-delay="200">
+            <?php if (isset($_GET['pesan'])): ?>
+                <?php if ($_GET['pesan'] == 'tambah_sukses'): ?>
+                    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-radius: 10px;">
+                        <i class="fa-solid fa-circle-check me-2"></i> Produk berhasil ditambahkan!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php elseif ($_GET['pesan'] == 'edit_sukses'): ?>
+                    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-radius: 10px;">
+                        <i class="fa-solid fa-circle-check me-2"></i> Perubahan produk berhasil disimpan!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php elseif ($_GET['pesan'] == 'hapus_sukses'): ?>
+                    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-radius: 10px;">
+                        <i class="fa-solid fa-circle-check me-2"></i> Produk berhasil dihapus!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php elseif ($_GET['pesan'] == 'hapus_gagal'): ?>
+                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" style="border-radius: 10px;">
+                        <i class="fa-solid fa-circle-exclamation me-2"></i> Gagal menghapus produk!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
             
             <div class="control-bar">
                 <div class="search-box">

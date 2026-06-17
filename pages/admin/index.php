@@ -5,7 +5,7 @@ if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
 }
 
 // 1. Hitung total produk
-$q_total_produk = mysqli_query($conn, "SELECT COUNT(id_produk) as total FROM produk_roti");
+$q_total_produk = mysqli_query($conn, "SELECT COUNT(id_produk) as total FROM produk_roti WHERE is_tampil = 1");
 $total_produk = mysqli_fetch_assoc($q_total_produk)['total'];
 
 // 2. Hitung pelanggan
@@ -13,7 +13,7 @@ $q_total_user = mysqli_query($conn, "SELECT COUNT(id_user) as total FROM users W
 $total_user = mysqli_fetch_assoc($q_total_user)['total'];
 
 // 3. Hitung stok menipis (stok <= 10)
-$q_stok_menipis = mysqli_query($conn, "SELECT COUNT(id_produk) as total FROM produk_roti WHERE stok <= 10");
+$q_stok_menipis = mysqli_query($conn, "SELECT COUNT(id_produk) as total FROM produk_roti WHERE stok <= 10 AND is_tampil = 1");
 $stok_menipis = mysqli_fetch_assoc($q_stok_menipis)['total'];
 
 // 4. Hitung total pendapatan (pesanan status selesai)
@@ -53,7 +53,7 @@ $q_pesanan_terbaru = mysqli_query($conn, "
 // 11. Ambil stok menipis (limit 3)
 $q_low_stock = mysqli_query($conn, "
     SELECT * FROM produk_roti 
-    WHERE stok <= 10 
+    WHERE stok <= 10 AND is_tampil = 1
     ORDER BY stok ASC 
     LIMIT 3
 ");
@@ -69,6 +69,7 @@ $q_act_orders = mysqli_query($conn, "
 $q_act_product = mysqli_query($conn, "
     SELECT nama_produk 
     FROM produk_roti 
+    WHERE is_tampil = 1
     ORDER BY id_produk DESC LIMIT 1
 ");
 
