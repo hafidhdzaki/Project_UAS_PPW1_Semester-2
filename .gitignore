@@ -1,0 +1,16 @@
+# Database connection & credentials (sensitive info)
+includes/config.php
+
+# OS metadata files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
