@@ -3,6 +3,8 @@
 > **Proyek Ujian Akhir Semester (UAS) - Mata Kuliah Praktikum Pemrograman Web 1**  
 > Dibuat oleh **Hafidh Dzaki Fardiansyah**  
 > Program Studi **Teknologi Rekayasa Perangkat Lunak**
+> NIM **25/568374/SV/27446**
+> Kelas **PL2B2**
 
 ---
 
