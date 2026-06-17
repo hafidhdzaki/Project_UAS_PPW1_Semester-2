@@ -14,8 +14,8 @@ $id_produk = isset($_GET['id']) ? mysqli_real_escape_string($conn, $_GET['id']) 
 if (isset($_POST['update_produk'])) {
     $nama        = mysqli_real_escape_string($conn, $_POST['nama_produk']);
     $id_kategori = mysqli_real_escape_string($conn, $_POST['id_kategori']);
-    $harga       = mysqli_real_escape_string($conn, $_POST['harga']);
-    $stok        = mysqli_real_escape_string($conn, $_POST['stok']);
+    $harga       = floatval($_POST['harga']);
+    $stok        = intval($_POST['stok']);
     $deskripsi   = mysqli_real_escape_string($conn, $_POST['deskripsi']);
     
     // Konversi nilai toggle/switch ke boolean (1 atau 0)

@@ -149,6 +149,9 @@ document.addEventListener('DOMContentLoaded', function() {
         dropZone.addEventListener('drop', function(e) {
             let dt = e.dataTransfer;
             let files = dt.files;
+            if (fileInput) {
+                fileInput.files = files;
+            }
             handleFiles(files);
         });
 

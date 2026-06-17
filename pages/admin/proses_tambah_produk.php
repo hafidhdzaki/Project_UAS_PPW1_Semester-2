@@ -11,8 +11,8 @@ if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama        = mysqli_real_escape_string($conn, $_POST['nama_produk']);
     $id_kategori = mysqli_real_escape_string($conn, $_POST['id_kategori']);
-    $harga       = mysqli_real_escape_string($conn, $_POST['harga']);
-    $stok        = mysqli_real_escape_string($conn, $_POST['stok']);
+    $harga       = floatval($_POST['harga']);
+    $stok        = intval($_POST['stok']);
     $deskripsi   = mysqli_real_escape_string($conn, $_POST['deskripsi']);
     
     // Toggle switches (jika dicentang nilainya 1, jika tidak 0)

@@ -151,13 +151,12 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
                     <div class="card-header-title">
                         <i class="fa-regular fa-image"></i> Gambar Produk
                     </div>
-                    
+                    <input type="file" id="fileInput" name="gambar_produk" hidden accept="image/png, image/jpeg, image/webp">
                     <div class="drag-drop-area" id="dropZone">
                         <div class="drag-drop-icon"><i class="fa-regular fa-image"></i></div>
                         <p>Drag & drop gambar di sini</p>
                         <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 15px;">atau</p>
                         <button type="button" class="btn-pilih-file" onclick="document.getElementById('fileInput').click()">Pilih File</button>
-                        <input type="file" id="fileInput" name="gambar_produk" hidden accept="image/png, image/jpeg, image/webp">
                     </div>
                     <div class="file-format-text">Format: JPG, PNG, WEBP • Maks. 2MB</div>
                 </div>
