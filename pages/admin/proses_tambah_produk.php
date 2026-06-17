@@ -1,4 +1,6 @@
+<?php
 include_once("../../includes/config.php");
+
 
 // Proteksi Admin
 if (!isLoggedIn() || $_SESSION['role'] !== 'admin') {

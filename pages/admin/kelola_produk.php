@@ -68,7 +68,7 @@ $pesanan_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as cn
 </head>
 <body>
 
-    <aside class="sidebar d-none d-lg-flex" id="sidebar">
+    <aside class="sidebar" id="sidebar">
         <a href="../../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>

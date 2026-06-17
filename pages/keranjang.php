@@ -1,4 +1,6 @@
+<?php
 include_once("../includes/config.php");
+
 if (!isLoggedIn()) {
     header('Location: login.php');
     exit();

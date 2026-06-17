@@ -1,4 +1,6 @@
-include_once("../includes/config.php"); 
+<?php
+include_once("../includes/config.php");
+
 
 // Ambil ID produk dari URL (misal: detail_produk.php?id=1)
 $id_produk = isset($_GET['id']) ? intval($_GET['id']) : 0;

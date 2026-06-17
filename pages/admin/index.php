@@ -163,7 +163,7 @@ usort($activities, function($a, $b) {
 </head>
 <body>
 
-    <aside class="sidebar d-none d-lg-flex" id="sidebar">
+    <aside class="sidebar" id="sidebar">
         <a href="../../index.php" class="sidebar-brand">
             <div class="icon-bg"><i class="fa-solid fa-bread-slice"></i></div>
             Roti Nusantara <span class="badge-admin">ADMIN</span>
@@ -411,28 +411,7 @@ usort($activities, function($a, $b) {
 
     </main>
 
-    <nav class="bottom-nav">
-        <a href="index.php" class="bottom-nav-item active">
-            <i class="fa-solid fa-border-all"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="kelola_produk.php" class="bottom-nav-item">
-            <i class="fa-solid fa-box"></i>
-            <span>Produk</span>
-        </a>
-        <a href="kelola_pesanan.php" class="bottom-nav-item">
-            <i class="fa-solid fa-clipboard-list"></i>
-            <span>Pesanan</span>
-        </a>
-        <a href="kelola_kategori.php" class="bottom-nav-item">
-            <i class="fa-solid fa-tags"></i>
-            <span>Kategori</span>
-        </a>
-        <a href="../logout.php" class="bottom-nav-item" onclick="return confirm('Apakah Anda yakin ingin keluar?');">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            <span>Keluar</span>
-        </a>
-    </nav>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>

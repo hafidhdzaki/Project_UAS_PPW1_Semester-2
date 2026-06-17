@@ -1,4 +1,6 @@
-include_once("../includes/config.php"); 
+<?php
+include_once("../includes/config.php");
+
 
 // Ambil parameter filter & pencarian
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
